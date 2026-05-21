@@ -11,6 +11,7 @@ import { AuthenticatedRequest } from '../types/http';
 import { calculateCustomizationPrice, defaultCustomizationOptions, type CustomizationSelection } from '../utils/customization';
 import { getCategoryDisplayName, normalizeCategorySlug } from '../utils/category';
 import { isCloudinaryImageUpload, uploadFilesToCloudinary, type LocalUploadFile } from '../utils/cloudinaryUploads';
+import { getProductPrimaryImage } from '../utils/productImage';
 import { getCustomersAlsoBought, sortProducts } from '../services/mlService';
 
 const router = express.Router();
@@ -219,7 +220,7 @@ const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUr
 
   if (input.status !== undefined) {
     const status = String(input.status || '').trim().toLowerCase();
-    payload.status = ['active', 'inactive', 'draft'].includes(status) ? status : 'active';
+    payload.status = ['active', 'inactive', 'draft'].includes(status) ? status : 'draft';
   }
 
   if (input.semanticKeywords !== undefined) {
@@ -477,11 +478,7 @@ router.get(
       pages: Math.ceil(total / limit) || 1,
       products: sliced.map((p) => ({
         name: p.name,
-        image: Array.isArray(p.images)
-          ? typeof p.images[0] === 'string'
-            ? p.images[0]
-            : ((p.images[0] as any)?.url || '')
-          : '',
+        image: getProductPrimaryImage(p),
         price: p.price,
         shortDescription: (p.description || '').slice(0, 200),
         url: `/products/${p._id}`,

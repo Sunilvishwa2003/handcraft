@@ -137,21 +137,8 @@ export const calculateCustomizationPrice = (basePrice: number, selection: Custom
   };
 };
 
-export const isMobileDevice = () => {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return /android|iphone|ipad|ipod/i.test(window.navigator.userAgent);
-};
-
 export const buildWhatsAppHref = (phoneNumber: string, message: string) => {
   const encodedMessage = encodeURIComponent(message);
   const sanitizedNumber = phoneNumber.replace(/[^\d]/g, "");
-
-  if (isMobileDevice()) {
-    return `https://wa.me/${sanitizedNumber}?text=${encodedMessage}`;
-  }
-
-  return `https://web.whatsapp.com/send?phone=${sanitizedNumber}&text=${encodedMessage}`;
+  return `https://wa.me/${sanitizedNumber}?text=${encodedMessage}`;
 };

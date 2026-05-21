@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { DragEvent as ReactDragEvent, FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
-import { apiFetch, formatPrice, getApiUrl, getProductImageUrl, getStoredUser, resolveAssetUrl } from "@/lib/api";
+import { apiFetch, formatPrice, getApiUrl, getProductImageUrl, getProductPrimaryImageUrl, getStoredUser, resolveAssetUrl } from "@/lib/api";
 import ProjectAccuracyChart from "@/components/ProjectAccuracyChart";
 import { Ad, CustomProject, CustomProjectStage, Order, Product } from "@/lib/types";
 
@@ -232,7 +232,7 @@ const formFromProduct = (product: Product): ProductFormState => ({
   availability: product.availability,
   featured: Boolean(product.featured),
   model3dUrl: product.model3dUrl || "",
-  images: product.images.length
+  images: product.images?.length
     ? product.images.map((image) => getProductImageUrl(image)).filter(Boolean)
     : [""],
   specs: product.specs.join("\n"),
@@ -1466,15 +1466,15 @@ const saveAd = async (event: FormEvent) => {
                   {filteredProducts.map((product) => (
                     <div key={product._id} className="grid gap-3 border-b border-gray-200 py-4 md:grid-cols-[72px_1fr_auto] md:items-center">
                       <div className="flex h-18 w-18 items-center justify-center rounded-md bg-gray-50">
-                        {(() => {
-                          const firstImage = product.images.find((item) => Boolean(getProductImageUrl(item)));
-                          const imageUrl = firstImage ? getProductImageUrl(firstImage) : "";
-                          return imageUrl ? (
-                            <img src={imageUrl} alt={product.name} className="h-full w-full object-contain" />
-                          ) : (
-                            <span className="text-xs text-gray-400">No image</span>
-                          );
-                        })()}
+                        <img
+                          src={getProductPrimaryImageUrl(product)}
+                          alt={product.name}
+                          className="h-full w-full object-contain"
+                          onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src = "/mahabs-logo.svg";
+                          }}
+                        />
                       </div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2">

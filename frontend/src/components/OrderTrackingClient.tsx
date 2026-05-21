@@ -5,7 +5,7 @@ import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { useStoredUser } from "@/hooks/useStoredUser";
-import { apiFetch, formatPrice, getSocketUrl, setStoredUser, resolveAssetUrl } from "@/lib/api";
+import { apiFetch, formatPrice, getCartItemImageUrl, getSocketUrl, setStoredUser } from "@/lib/api";
 import { launchRazorpayCheckout } from "@/lib/razorpay";
 import { Order } from "@/lib/types";
 
@@ -364,7 +364,7 @@ export default function OrderTrackingClient({ orderId }: { orderId: string }) {
                   <div key={`${order._id}-${item.product}`} className="flex gap-4 rounded-[24px] bg-slate-50/90 p-4">
                     <div className="h-20 w-20 overflow-hidden rounded-[18px] border border-slate-200 bg-white p-2">
                       <img
-                        src={resolveAssetUrl(item.image)}
+                        src={getCartItemImageUrl(item.image)}
                         alt={item.name}
                         className="h-full w-full object-contain"
                         onError={(event) => {

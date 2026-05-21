@@ -1,14 +1,28 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { toast } from "sonner";
 import Product3DViewer from "@/components/Product3DViewer";
 import ProductCard from "@/components/ProductCard";
 import ProductImageGallery from "@/components/product/ProductImageGallery";
 import WishlistButton from "@/components/WishlistButton";
-import { addRecentlyViewed, apiFetch, formatPrice, getGuestCart, getProductImageAlt, getProductImageUrl, getStoredUser, isBackendAssetUrl, setGuestCart } from "@/lib/api";
+import {
+  addRecentlyViewed,
+  apiFetch,
+  buildCartItemFromProduct,
+  formatPrice,
+  getGuestCart,
+  getProductImageAlt,
+  getProductImageUrl,
+  getStoredUser,
+  isBackendAssetUrl,
+  setBuyNowCart,
+  setGuestCart,
+} from "@/lib/api";
 import { canCustomizeProduct, getProductCategoryName, getProductCategorySlug, isProductFullyCustomizable } from "@/lib/catalog";
+import { buildWhatsAppHref } from "@/lib/customization";
 import StonePricingNotice from "@/components/product/StonePricingNotice";
-import { Cart, Product, Review } from "@/lib/types";
+import { Cart, Product, Review, WhatsAppInquiryPreview } from "@/lib/types";
 import { MessageCircle } from "lucide-react";
 
 function shouldShowPrice(product: Product): boolean {
@@ -25,6 +39,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
   const [viewMode, setViewMode] = useState<'images' | '3d'>('images');
   const [review, setReview] = useState({ rating: "5", comment: "" });
   const [message, setMessage] = useState("");
+  const [isCustomizing, setIsCustomizing] = useState(false);
 
   useEffect(() => {
     apiFetch<Product>(`/products/${productId}`)
@@ -58,30 +73,23 @@ export default function ProductDetailClient({ productId }: { productId: string }
       } else {
         const cart = getGuestCart();
         const existing = cart.items.find((item) => item.product === product._id);
-        const firstImage = product.images?.[0];
         const items = existing
           ? cart.items.map((item) =>
               item.product === product._id ? { ...item, qty: item.qty + 1 } : item
             )
-          : [
-              ...cart.items,
-              {
-                product: product._id,
-                name: product.name,
-                image: getProductImageUrl(firstImage) || "",
-                price: product.price,
-                qty: 1,
-                countInStock: product.countInStock,
-              },
-            ];
+          : [...cart.items, buildCartItemFromProduct(product, 1)];
         setGuestCart(items);
       }
 
-      window.dispatchEvent(new Event("cart:changed"));
+      if (user?.token) {
+        window.dispatchEvent(new Event("cart:changed"));
+      }
       setMessage("Added to cart.");
+      toast.success("Added to cart");
     } catch (error) {
-      console.error(error);
-      setMessage(error instanceof Error ? error.message : "Could not add to cart.");
+      const nextMessage = error instanceof Error ? error.message : "Could not add to cart.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
     }
   };
 
@@ -100,33 +108,35 @@ export default function ProductDetailClient({ productId }: { productId: string }
     }
   };
 
-  const openWhatsAppCustomization = () => {
-    if (!product) return;
-    
-    const productUrl = typeof window !== "undefined" ? window.location.href : "";
-    const message = `Hello MahabsCrafto 👋
+  const openWhatsAppCustomization = async () => {
+    if (!product || isCustomizing) return;
 
-I am interested in customizing this product.
+    setIsCustomizing(true);
 
-━━━━━━━━━━━━━━━
-PRODUCT DETAILS
-━━━━━━━━━━━━━━━
+    try {
+      const preview = await apiFetch<WhatsAppInquiryPreview>("/whatsapp/inquiry-preview", {
+        method: "POST",
+        body: JSON.stringify({
+          productId: product._id,
+          inquiryType: "custom-design-inquiry",
+          notes: "Customization inquiry from the product page.",
+        }),
+      });
 
-Product: ${product.name}
-Category: ${getProductCategoryName(product.category) || "N/A"}
+      const phoneNumber = preview.phoneNumber?.trim();
+      if (!phoneNumber) {
+        throw new Error("WhatsApp contact is unavailable right now.");
+      }
 
-Product Link: ${productUrl}
-
-Please share:
-1. Size requirements
-2. Material preference
-3. Custom text/engraving
-4. Finish style
-5. Delivery location
-
-Thank you 🙏`;
-
-    window.open(`https://wa.me/916385609535?text=${encodeURIComponent(message)}`, "_blank");
+      window.open(buildWhatsAppHref(phoneNumber, preview.message), "_blank", "noopener,noreferrer");
+      toast.success("Opening WhatsApp");
+    } catch (error) {
+      const nextMessage = error instanceof Error ? error.message : "Could not open WhatsApp.";
+      setMessage(nextMessage);
+      toast.error(nextMessage);
+    } finally {
+      setIsCustomizing(false);
+    }
   };
 
   if (!product) {
@@ -196,14 +206,14 @@ Thank you 🙏`;
               ) : (
                 <div className="p-0">
                   {/* ProductImageGallery will handle clicks and lightbox */}
-                  <ProductImageGallery images={product.images} />
+                  <ProductImageGallery images={product.images || []} />
                 </div>
               )}
             </div>
 
             {/* Thumbnails (legacy - hidden because ProductImageGallery provides its own thumbnails) */}
             <div className="mt-3 hidden grid-cols-5 gap-2">
-              {product.images.map((image, index) => {
+              {(product.images || []).map((image, index) => {
                 const imageUrl = getProductImageUrl(image);
                 const altText = getProductImageAlt(image, `${product.name} ${index + 1}`);
                 const isVideo = imageUrl.endsWith('.mp4') || imageUrl.endsWith('.webm');
@@ -303,13 +313,9 @@ Thank you 🙏`;
                   {getProductCategorySlug(product.category) === "home-decor" && (
                     <button
                       type="button"
-                      onClick={async () => {
-                        try {
-                          await addToCart();
-                        } catch (error) {
-                          console.error(error);
-                        }
-                        window.location.href = '/checkout';
+                      onClick={() => {
+                        setBuyNowCart([buildCartItemFromProduct(product, 1)]);
+                        window.location.href = '/checkout?mode=buy-now';
                       }}
                       disabled={product.countInStock <= 0}
                       className="rounded-lg bg-emerald-500 py-3 font-bold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
@@ -327,10 +333,11 @@ Thank you 🙏`;
                     <button
                       type="button"
                       onClick={openWhatsAppCustomization}
+                      disabled={isCustomizing}
                       className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-bold text-white shadow-lg transition-all hover:scale-[1.02] sm:col-span-2"
                     >
                       <MessageCircle className="h-5 w-5" />
-                      Customize this product
+                      {isCustomizing ? "Opening WhatsApp..." : "Customize this product"}
                     </button>
                   ) : null}
                 </>
@@ -338,10 +345,11 @@ Thank you 🙏`;
                 <>
                   <button
                     onClick={openWhatsAppCustomization}
+                    disabled={isCustomizing}
                     className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-bold text-white shadow-lg transition-all hover:scale-[1.02]"
                   >
                     <MessageCircle className="h-5 w-5" />
-                    Customize
+                    {isCustomizing ? "Opening WhatsApp..." : "Customize"}
                   </button>
                   <WishlistButton
                     productId={productId}

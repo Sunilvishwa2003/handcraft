@@ -17,6 +17,7 @@ import {
   semanticProductSearch,
   searchProductsByIntent,
 } from '../services/mlService';
+import { getProductPrimaryImage } from '../utils/productImage';
 
 const router = express.Router();
 
@@ -69,7 +70,7 @@ const formatAiResponse = async (message: string) => {
 
   const responseProducts = products.map((p: any) => ({
     name: p.name,
-    image: Array.isArray(p.images) ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url || '') : '',
+    image: getProductPrimaryImage(p),
     price: p.price,
     shortDescription: (p.description || '').slice(0, 160),
     url: `/products/${p._id}`,

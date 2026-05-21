@@ -6,6 +6,7 @@ import { protect } from '../middleware/authMiddleware';
 import asyncHandler from '../utils/asyncHandler';
 import { AuthenticatedRequest } from '../types/http';
 import { calculateOrderTotals } from '../utils/pricing';
+import { getProductPrimaryImage } from '../utils/productImage';
 
 const router = express.Router();
 
@@ -66,12 +67,13 @@ router.put(
     if (existing) {
       existing.qty = quantity;
       existing.price = product.price;
+      existing.image = getProductPrimaryImage(product);
       existing.countInStock = product.countInStock;
     } else {
       cart.items.push({
         product: product._id,
         name: product.name,
-        image: typeof product.images[0] === 'string' ? product.images[0] : ((product.images[0] as any)?.url || ''),
+        image: getProductPrimaryImage(product),
         price: product.price,
         qty: quantity,
         countInStock: product.countInStock,

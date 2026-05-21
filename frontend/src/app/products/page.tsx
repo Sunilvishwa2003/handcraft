@@ -4,7 +4,7 @@
 import { FormEvent, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
-import { apiFetch, formatPrice, getProductImageUrl, resolveAssetUrl } from "@/lib/api";
+import { apiFetch, formatPrice, getProductPrimaryImageUrl, resolveAssetUrl } from "@/lib/api";
 import { getCategoryDisplayName, getProductCategorySlug, isStorefrontCategoryVisible } from "@/lib/catalog";
 import { Ad, Product, ProductListResponse } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
@@ -14,6 +14,32 @@ type Facets = {
   brands: string[];
   priceRange: { min: number; max: number };
 };
+
+type ProductSlide = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  imageUrl: string;
+  priceLabel: string;
+  brand: string;
+};
+
+type CategoryAdSlide = {
+  id: string;
+  title: string;
+  href: string;
+  desktopImage: string;
+  tabletImage: string;
+  mobileImage: string;
+};
+
+type CategorySliderSlide = ProductSlide | CategoryAdSlide;
+
+const isCategoryAdSlide = (slide: CategorySliderSlide): slide is CategoryAdSlide => "desktopImage" in slide;
+const getDesktopSlideImage = (slide: CategorySliderSlide) => (isCategoryAdSlide(slide) ? slide.desktopImage : slide.imageUrl);
+const getTabletSlideImage = (slide: CategorySliderSlide) => (isCategoryAdSlide(slide) ? slide.tabletImage || slide.desktopImage : slide.imageUrl);
+const getMobileSlideImage = (slide: CategorySliderSlide) => (isCategoryAdSlide(slide) ? slide.mobileImage || slide.desktopImage : slide.imageUrl);
 
 const sorts = [
   ["relevance", "Relevance"],
@@ -163,30 +189,28 @@ function ProductsPageContent() {
     setQuery({ q: '', category: 'all', brand: 'all', minPrice: '', maxPrice: '', rating: '', availability: '', sort: 'relevance' });
   };
 
-  const categorySlides = useMemo(() => {
+  const categorySlides = useMemo<ProductSlide[]>(() => {
     if (!shouldShowCategorySlider) {
       return [];
     }
 
     return products
-      .filter((product) => product.images?.[0])
       .slice(0, 5)
       .map((product) => {
-        const imageSource = product.images?.[0];
         return {
           id: product._id,
           title: product.name,
           description:
             product.description.length > 180 ? `${product.description.slice(0, 177).trimEnd()}...` : product.description,
           href: `/products/${product._id}`,
-          imageUrl: getProductImageUrl(imageSource),
+          imageUrl: getProductPrimaryImageUrl(product),
           priceLabel: formatPrice(product.price),
           brand: product.brand,
         };
       });
   }, [products, shouldShowCategorySlider]);
 
-  const categoryAdSlides = useMemo(
+  const categoryAdSlides = useMemo<CategoryAdSlide[]>(
     () =>
       categoryAds
         .filter((ad) => ad.active !== false && (ad.imageUrl || ad.desktopImage || ad.tabletImage || ad.mobileImage))
@@ -202,7 +226,7 @@ function ProductsPageContent() {
     [categoryAds],
   );
 
-  const sliderSlides = categoryAdSlides.length ? categoryAdSlides : categorySlides;
+  const sliderSlides: CategorySliderSlide[] = categoryAdSlides.length ? categoryAdSlides : categorySlides;
   const categorySlidesCount = sliderSlides.length;
   const currentCategorySlideIndex = categorySlidesCount ? activeCategorySlide % categorySlidesCount : 0;
 
@@ -430,7 +454,9 @@ function ProductsPageContent() {
             </div>
 
             {/* Category Slider */}
-            {sliderSlides.length ? (
+            {categoryAdsLoading && shouldShowCategorySlider ? (
+              <div className="mt-4 rounded-lg bg-gray-50 p-6 text-sm text-gray-500 text-center">Loading category highlights...</div>
+            ) : sliderSlides.length ? (
               <section className="relative mt-4 overflow-hidden rounded-xl sm:rounded-2xl border border-gray-200 bg-white shadow-xl shadow-slate-200/30 transition-colors duration-300 dark:border-slate-700/50 dark:bg-slate-950 dark:shadow-black/10">
                 <div
                   className="flex transition-transform duration-700 ease-out"
@@ -449,22 +475,14 @@ function ProductsPageContent() {
                         <picture>
                           <source
                             media="(max-width: 767px)"
-                            srcSet={
-                              'mobileImage' in slide
-                                ? slide.mobileImage || slide.desktopImage || (slide as any).imageUrl
-                                : (slide as any).imageUrl
-                            }
+                            srcSet={getMobileSlideImage(slide)}
                           />
                           <source
                             media="(max-width: 1023px)"
-                            srcSet={
-                              'tabletImage' in slide
-                                ? slide.tabletImage || slide.desktopImage || (slide as any).imageUrl
-                                : (slide as any).imageUrl
-                            }
+                            srcSet={getTabletSlideImage(slide)}
                           />
                           <img
-                            src={'desktopImage' in slide ? slide.desktopImage || (slide as any).imageUrl : (slide as any).imageUrl}
+                            src={getDesktopSlideImage(slide)}
                             alt={slide.title}
                             className="w-full h-full object-cover object-center"
                             loading={index === 0 ? "eager" : "lazy"}
@@ -499,7 +517,7 @@ function ProductsPageContent() {
                       <span aria-hidden="true" className="text-lg leading-none">›</span>
                     </button>
                     <div className="absolute inset-x-0 bottom-1 z-20 flex justify-center gap-1 sm:bottom-2 sm:gap-2">
-                      {categorySlides.map((_, index) => (
+                      {sliderSlides.map((_, index) => (
                         <button
                           key={index}
                           type="button"

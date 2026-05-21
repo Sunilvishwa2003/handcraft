@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "test": "tsc --noEmit",
     "migrate:images": "ts-node src/scripts/migrateImagesToCloudinary.ts",
+    "repair:images": "ts-node src/scripts/repairProductImages.ts",
     "test:smoke": "node smoke-test.mjs",
     "test:ad-smoke": "node smoke-ad-test.mjs"
   },

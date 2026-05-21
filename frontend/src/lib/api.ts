@@ -3,6 +3,7 @@ import { normalizeUserAdminState } from "./isAdmin";
 
 const DEFAULT_BACKEND_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT || "5001";
 const DEFAULT_API_PATH = "/api";
+export const PRODUCT_IMAGE_PLACEHOLDER = "/mahabs-logo.svg";
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
 const WINDOWS_UPLOAD_PATH_PATTERN = /\/uploads\/.+$/i;
@@ -56,6 +57,14 @@ export const resolveAssetUrl = (url: string) => {
     return normalized;
   }
 
+  if (normalized.startsWith("/")) {
+    if (normalized.startsWith("/uploads/")) {
+      return `${backendUrl}${encodeURI(normalized)}`;
+    }
+
+    return encodeURI(normalized);
+  }
+
   if (normalized.startsWith("//")) {
     return encodeURI(`https:${normalized}`);
   }
@@ -87,6 +96,12 @@ export const resolveAssetUrl = (url: string) => {
 };
 
 export type ProductImageSource = string | { url?: string; alt?: string };
+type ProductImageCarrier = {
+  image?: string | null;
+  thumbnail?: string | null;
+  imageUrl?: string | null;
+  images?: ProductImageSource[] | null;
+};
 
 export const getProductImageUrl = (image?: ProductImageSource) => {
   if (!image) {
@@ -108,6 +123,32 @@ export const getProductImageAlt = (image?: ProductImageSource, fallback = "") =>
   return image.alt?.trim() || fallback;
 };
 
+export const getProductPrimaryImageUrl = (
+  product?: ProductImageCarrier | null,
+  fallback = PRODUCT_IMAGE_PLACEHOLDER,
+) => {
+  if (!product) {
+    return fallback;
+  }
+
+  const candidates: Array<string | undefined> = [
+    product.image?.trim() ? resolveAssetUrl(product.image.trim()) : "",
+    ...(Array.isArray(product.images) ? product.images.map((image) => getProductImageUrl(image)) : []),
+    product.thumbnail?.trim() ? resolveAssetUrl(product.thumbnail.trim()) : "",
+    product.imageUrl?.trim() ? resolveAssetUrl(product.imageUrl.trim()) : "",
+  ];
+
+  return candidates.find(Boolean) || fallback;
+};
+
+export const getCartItemImageUrl = (
+  image?: string | null,
+  fallback = PRODUCT_IMAGE_PLACEHOLDER,
+) => {
+  const resolved = image?.trim() ? resolveAssetUrl(image.trim()) : "";
+  return resolved || fallback;
+};
+
 export const isBackendAssetUrl = (url: string) => {
   if (!url) {
     return false;
@@ -126,6 +167,7 @@ export const formatPrice = (value: number) =>
 const RECENTLY_VIEWED_KEY = "recentlyViewedProducts";
 const STORED_USER_KEY = "commerceUser";
 export const WISHLIST_IDS_STORAGE_KEY = "commerceWishlistIds";
+const BUY_NOW_CART_KEY = "commerceBuyNowCart";
 
 export const getRecentlyViewed = (): Product[] => {
   if (typeof window === "undefined") {
@@ -252,3 +294,50 @@ export const setGuestCart = (items: Cart["items"]) => {
   window.localStorage.setItem("guestCart", JSON.stringify(items));
   window.dispatchEvent(new Event("cart:changed"));
 };
+
+export const getBuyNowCart = (): Cart | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(BUY_NOW_CART_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const items = JSON.parse(raw) as Cart["items"];
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+    return { items, subtotal, discountAmount: 0, total: subtotal };
+  } catch {
+    window.localStorage.removeItem(BUY_NOW_CART_KEY);
+    return null;
+  }
+};
+
+export const setBuyNowCart = (items: Cart["items"]) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(BUY_NOW_CART_KEY, JSON.stringify(items));
+  window.dispatchEvent(new Event("cart:changed"));
+};
+
+export const clearBuyNowCart = () => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(BUY_NOW_CART_KEY);
+  window.dispatchEvent(new Event("cart:changed"));
+};
+
+export const buildCartItemFromProduct = (product: Product, qty = 1): Cart["items"][number] => ({
+  product: product._id,
+  name: product.name,
+  image: getProductPrimaryImageUrl(product),
+  price: product.price,
+  qty,
+  countInStock: product.countInStock,
+});

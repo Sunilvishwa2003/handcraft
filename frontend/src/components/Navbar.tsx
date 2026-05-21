@@ -8,7 +8,7 @@ import { apiFetch, getApiUrl, getGuestCart } from '@/lib/api';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import useMenu from '@/hooks/useMenu';
 import { isAdmin as isAdminEmail } from '@/lib/isAdmin';
-import { storefrontFeaturedCategories } from '@/lib/catalog';
+import { getCategoryDisplayName, getProductCategorySlug, storefrontFeaturedCategories } from '@/lib/catalog';
 import { Cart } from '@/lib/types';
 import NotificationBell from './NotificationBell';
 
@@ -33,11 +33,11 @@ export default function Navbar() {
     const map = new Map<string, string>();
 
     source.forEach((category) => {
-      const normalized = category.trim().toLowerCase();
-      if (!normalized || map.has(normalized)) {
+      const slug = getProductCategorySlug(category);
+      if (!slug || map.has(slug)) {
         return;
       }
-      map.set(normalized, category.trim());
+      map.set(slug, getCategoryDisplayName(category));
     });
 
     return Array.from(map.values());

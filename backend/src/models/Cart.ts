@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { PRODUCT_IMAGE_PLACEHOLDER } from '../utils/productImage';
 
 export interface ICartItem {
   product: mongoose.Types.ObjectId;
@@ -25,7 +26,7 @@ const cartSchema = new Schema<ICart>(
       {
         product: { type: Schema.Types.ObjectId, required: true, ref: 'Product' },
         name: { type: String, required: true },
-        image: { type: String, required: true },
+        image: { type: String, default: PRODUCT_IMAGE_PLACEHOLDER, trim: true },
         price: { type: Number, required: true },
         qty: { type: Number, required: true, min: 1 },
         countInStock: { type: Number, required: true },

@@ -63,12 +63,6 @@ const heroStudioCards = [
   },
 ];
 
-const heroMaterialNotes = [
-  { label: "Granite grain", value: "Dense texture" },
-  { label: "Chisel depth", value: "Layered relief" },
-  { label: "Hand finish", value: "Matte glow" },
-];
-
 export default function Home() {
   const [home, setHome] = useState<HomePayload>(emptyHome);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { IProduct } from './Product';
 import { IUser } from './User';
+import { PRODUCT_IMAGE_PLACEHOLDER } from '../utils/productImage';
 
 interface IOrderItem {
   name: string;
@@ -63,7 +64,7 @@ const orderSchema = new Schema<IOrder>(
       {
         name: { type: String, required: true },
         qty: { type: Number, required: true },
-        image: { type: String, required: true },
+        image: { type: String, default: PRODUCT_IMAGE_PLACEHOLDER, trim: true },
         price: { type: Number, required: true },
         originalPrice: { type: Number },
         product: { type: Schema.Types.ObjectId, required: true, ref: 'Product' },

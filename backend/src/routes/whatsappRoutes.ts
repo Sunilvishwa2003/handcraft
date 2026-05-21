@@ -29,6 +29,7 @@ router.post(
 
     if (product?.name) {
       lines.push(`Product: ${product.name}`);
+      lines.push(`Product ID: ${productId}`);
     }
 
     const customization = req.body?.customization || {};

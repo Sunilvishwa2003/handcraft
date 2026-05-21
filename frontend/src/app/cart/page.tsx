@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useEffectEvent, useState } from "react";
-import { apiFetch, formatPrice, getGuestCart, getStoredUser, resolveAssetUrl, setGuestCart } from "@/lib/api";
+import { apiFetch, formatPrice, getCartItemImageUrl, getGuestCart, getStoredUser, setGuestCart } from "@/lib/api";
 import { Cart } from "@/lib/types";
 
 export default function CartPage() {
@@ -11,19 +11,26 @@ export default function CartPage() {
   const [message, setMessage] = useState("");
   const [pincode, setPincode] = useState("");
   const [shippingEstimate, setShippingEstimate] = useState("");
+  const [loading, setLoading] = useState(true);
   const load = useEffectEvent(async () => {
+    setLoading(true);
     const user = getStoredUser();
     if (user?.token) {
       setCart(await apiFetch<Cart>("/cart"));
+      setLoading(false);
       return;
     }
 
     setCart(getGuestCart());
+    setLoading(false);
   });
 
   useEffect(() => {
     const syncCart = () => {
-      load().catch(() => setCart(getGuestCart()));
+      load().catch(() => {
+        setCart(getGuestCart());
+        setLoading(false);
+      });
     };
 
     syncCart();
@@ -41,25 +48,43 @@ export default function CartPage() {
       return;
     }
 
+    const currentItem = cart.items.find((item) => item.product === productId);
+    if (currentItem && qty > currentItem.countInStock) {
+      setMessage(`Only ${currentItem.countInStock} item${currentItem.countInStock === 1 ? "" : "s"} available.`);
+      return;
+    }
+
     const user = getStoredUser();
-    if (user?.token) {
-      setCart(await apiFetch<Cart>("/cart/items", { method: "PUT", body: JSON.stringify({ productId, qty }) }));
-      window.dispatchEvent(new Event("cart:changed"));
-    } else {
-      const items = cart.items.map((item) => (item.product === productId ? { ...item, qty } : item));
-      setGuestCart(items);
-      setCart(getGuestCart());
+    setMessage("");
+
+    try {
+      if (user?.token) {
+        setCart(await apiFetch<Cart>("/cart/items", { method: "PUT", body: JSON.stringify({ productId, qty }) }));
+        window.dispatchEvent(new Event("cart:changed"));
+      } else {
+        const items = cart.items.map((item) => (item.product === productId ? { ...item, qty } : item));
+        setGuestCart(items);
+        setCart(getGuestCart());
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update the cart.");
     }
   };
 
   const remove = async (productId: string) => {
     const user = getStoredUser();
-    if (user?.token) {
-      setCart(await apiFetch<Cart>(`/cart/items/${productId}`, { method: "DELETE" }));
-      window.dispatchEvent(new Event("cart:changed"));
-    } else {
-      setGuestCart(cart.items.filter((item) => item.product !== productId));
-      setCart(getGuestCart());
+    setMessage("");
+
+    try {
+      if (user?.token) {
+        setCart(await apiFetch<Cart>(`/cart/items/${productId}`, { method: "DELETE" }));
+        window.dispatchEvent(new Event("cart:changed"));
+      } else {
+        setGuestCart(cart.items.filter((item) => item.product !== productId));
+        setCart(getGuestCart());
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not remove the item.");
     }
   };
 
@@ -108,14 +133,16 @@ export default function CartPage() {
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           {/* Cart Items */}
           <section className="rounded-xl bg-white p-3 sm:p-4 shadow-sm">
-            {cart.items.length ? (
+            {loading ? (
+              <div className="rounded-lg bg-gray-50 p-6 text-center text-sm text-gray-500">Loading cart...</div>
+            ) : cart.items.length ? (
               <div className="space-y-3">
                 {cart.items.map((item) => (
                   <article key={item.product} className="flex gap-3 rounded-lg border border-gray-200 p-3">
                     {/* Product Image */}
                     <Link href={`/products/${item.product}`} className="shrink-0">
                       <img
-                        src={resolveAssetUrl(item.image)}
+                        src={getCartItemImageUrl(item.image)}
                         alt={item.name}
                         className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gray-50"
                         onError={(event) => {

@@ -16,6 +16,9 @@ export type Product = {
   brand: string;
   category: string | ProductCategory;
   subcategory?: string;
+  image?: string;
+  thumbnail?: string;
+  imageUrl?: string;
   images: Array<string | { url?: string; alt?: string }>;
   model3dUrl?: string;
   rating: number;

@@ -2,8 +2,17 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import WishlistButton from "@/components/WishlistButton";
-import { apiFetch, formatPrice, getGuestCart, getProductImageUrl, getStoredUser, setGuestCart } from "@/lib/api";
+import {
+  apiFetch,
+  buildCartItemFromProduct,
+  formatPrice,
+  getGuestCart,
+  getProductPrimaryImageUrl,
+  getStoredUser,
+  setGuestCart,
+} from "@/lib/api";
 import { getProductCategoryName, isProductFullyCustomizable } from "@/lib/catalog";
 import { Cart, Product } from "@/lib/types";
 
@@ -33,34 +42,23 @@ export default function ProductCard({
           body: JSON.stringify({ productId: product._id, qty: 1 }),
         });
         window.dispatchEvent(new Event("cart:changed"));
+        toast.success("Added to cart");
         return;
       }
 
       const cart = getGuestCart();
       const existing = cart.items.find((item) => item.product === product._id);
-      const firstImage = product.images?.[0];
       const items = existing
         ? cart.items.map((item) => (item.product === product._id ? { ...item, qty: item.qty + 1 } : item))
-        : [
-            ...cart.items,
-            {
-              product: product._id,
-              name: product.name,
-              image: getProductImageUrl(firstImage) || "",
-              price: product.price,
-              qty: 1,
-              countInStock: product.countInStock,
-            },
-          ];
+        : [...cart.items, buildCartItemFromProduct(product, 1)];
       setGuestCart(items);
-      window.dispatchEvent(new Event("cart:changed"));
+      toast.success("Added to cart");
     } catch (error) {
-      console.error("Failed to add to cart:", error);
+      toast.error(error instanceof Error ? error.message : "Could not add this item to the cart.");
     }
   };
 
-  const productImage =
-    product.images?.map((image) => getProductImageUrl(image)).find(Boolean) || '/mahabs-logo.svg';
+  const productImage = getProductPrimaryImageUrl(product);
 
   return (
     <motion.article 

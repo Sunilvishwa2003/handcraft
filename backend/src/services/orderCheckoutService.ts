@@ -8,6 +8,7 @@ import User from '../models/User';
 import { detectFraud } from './mlService';
 import { emitOrderUpdate, emitToUser } from './realtimeService';
 import { calculateOrderTotals, roundMoney, ShippingOption } from '../utils/pricing';
+import { getProductPrimaryImage } from '../utils/productImage';
 
 type RawOrderItem = {
   product?: string;
@@ -77,7 +78,7 @@ export const buildOrderItems = async (rawItems: RawOrderItem[]) => {
     return {
       name: product.name,
       qty,
-      image: typeof product.images[0] === 'string' ? product.images[0] : ((product.images[0] as any)?.url || ''),
+      image: getProductPrimaryImage(product),
       price: product.price,
       originalPrice: product.originalPrice,
       product: product._id,

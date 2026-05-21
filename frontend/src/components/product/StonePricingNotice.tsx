@@ -3,7 +3,7 @@
 import React from "react";
 import { Info } from "lucide-react";
 import { Product } from "@/lib/types";
-import { getProductCategorySlug, getProductCategoryName } from "@/lib/catalog";
+import { getProductCategorySlug } from "@/lib/catalog";
 
 type Props = {
   product: Product;
@@ -15,7 +15,6 @@ const DEFAULT_MESSAGE =
 
 export default function StonePricingNotice({ product, message }: Props) {
   const productMsg = product.pricingNoticeMessage || message || DEFAULT_MESSAGE;
-
   const categorySlug = getProductCategorySlug(product.category);
 
   // Show pricing notice only for stone and stone-name-board categories

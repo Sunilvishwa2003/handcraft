@@ -1,8 +1,18 @@
 "use client";
 
-import { FormEvent, useEffect, useEffectEvent, useState } from "react";
-import { useRouter } from "next/navigation";
-import { apiFetch, formatPrice, getGuestCart, getStoredUser, resolveAssetUrl, setGuestCart } from "@/lib/api";
+import { FormEvent, Suspense, useEffect, useEffectEvent, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  apiFetch,
+  clearBuyNowCart,
+  formatPrice,
+  getBuyNowCart,
+  getCartItemImageUrl,
+  getGuestCart,
+  getStoredUser,
+  setBuyNowCart,
+  setGuestCart,
+} from "@/lib/api";
 import { launchRazorpayCheckout } from "@/lib/razorpay";
 import { Cart, Order, User } from "@/lib/types";
 
@@ -20,9 +30,13 @@ const fieldClassName =
   "customer-input mt-1 w-full rounded-lg border bg-white px-3 py-2.5 text-sm font-normal text-gray-950 placeholder:text-slate-400 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100";
 const selectClassName =
   "customer-input mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-normal text-gray-950 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100";
+const EMPTY_CART: Cart = { items: [], subtotal: 0, discountAmount: 0, total: 0 };
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isBuyNowMode = searchParams.get("mode") === "buy-now";
+  const successOrderId = searchParams.get("success");
   const [cart, setCart] = useState<Cart | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [message, setMessage] = useState("");
@@ -38,6 +52,7 @@ export default function CheckoutPage() {
   });
   const [user, setUser] = useState<User | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchSummary = async (items: Cart["items"], paymentMethod: string, shippingOption: string) => {
     return apiFetch<Summary>("/orders/summary", {
@@ -47,16 +62,32 @@ export default function CheckoutPage() {
   };
 
   const loadCart = useEffectEvent(async () => {
+    setLoading(true);
     const storedUser = getStoredUser();
     setUser(storedUser);
-    const nextCart = storedUser?.token ? await apiFetch<Cart>("/cart") : getGuestCart();
+    const buyNowCart = isBuyNowMode ? getBuyNowCart() : null;
+    const nextCart = buyNowCart?.items.length ? buyNowCart : storedUser?.token ? await apiFetch<Cart>("/cart") : getGuestCart();
     setCart(nextCart);
+    if (!nextCart.items.length) {
+      setSummary(null);
+      setLoading(false);
+      return;
+    }
+
     setSummary(await fetchSummary(nextCart.items, form.paymentMethod, form.shippingOption));
+    setLoading(false);
   });
 
   useEffect(() => {
+    if (successOrderId) {
+      return;
+    }
+
     const syncCheckout = () => {
-      loadCart().catch((error) => setMessage(error instanceof Error ? error.message : "Could not load checkout"));
+      loadCart().catch((error) => {
+        setMessage(error instanceof Error ? error.message : "Could not load checkout");
+        setLoading(false);
+      });
     };
 
     syncCheckout();
@@ -67,7 +98,95 @@ export default function CheckoutPage() {
       window.removeEventListener("cart:changed", syncCheckout);
       window.removeEventListener("storage", syncCheckout);
     };
-  }, []);
+  }, [isBuyNowMode, successOrderId]);
+
+  const updateQty = async (productId: string, qty: number) => {
+    if (!cart) {
+      return;
+    }
+
+    if (qty < 1) {
+      await removeItem(productId);
+      return;
+    }
+
+    const currentItem = cart.items.find((item) => item.product === productId);
+    if (currentItem && qty > currentItem.countInStock) {
+      setMessage(`Only ${currentItem.countInStock} item${currentItem.countInStock === 1 ? "" : "s"} available.`);
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      if (isBuyNowMode) {
+        const items = cart.items.map((item) => (item.product === productId ? { ...item, qty } : item));
+        setBuyNowCart(items);
+        const nextCart = getBuyNowCart() || EMPTY_CART;
+        setCart(nextCart);
+        setSummary(nextCart.items.length ? await fetchSummary(nextCart.items, form.paymentMethod, form.shippingOption) : null);
+        return;
+      }
+
+      const storedUser = getStoredUser();
+      if (storedUser?.token) {
+        const nextCart = await apiFetch<Cart>("/cart/items", { method: "PUT", body: JSON.stringify({ productId, qty }) });
+        setCart(nextCart);
+        setSummary(nextCart.items.length ? await fetchSummary(nextCart.items, form.paymentMethod, form.shippingOption) : null);
+        window.dispatchEvent(new Event("cart:changed"));
+        return;
+      }
+
+      const items = cart.items.map((item) => (item.product === productId ? { ...item, qty } : item));
+      setGuestCart(items);
+      const nextCart = getGuestCart();
+      setCart(nextCart);
+      setSummary(nextCart.items.length ? await fetchSummary(nextCart.items, form.paymentMethod, form.shippingOption) : null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update checkout items.");
+    }
+  };
+
+  const removeItem = async (productId: string) => {
+    if (!cart) {
+      return;
+    }
+
+    setMessage("");
+
+    try {
+      if (isBuyNowMode) {
+        const items = cart.items.filter((item) => item.product !== productId);
+        if (items.length) {
+          setBuyNowCart(items);
+          const nextCart = getBuyNowCart() || EMPTY_CART;
+          setCart(nextCart);
+        } else {
+          clearBuyNowCart();
+          setCart(EMPTY_CART);
+        }
+        setSummary(items.length ? await fetchSummary(items, form.paymentMethod, form.shippingOption) : null);
+        return;
+      }
+
+      const storedUser = getStoredUser();
+      if (storedUser?.token) {
+        const nextCart = await apiFetch<Cart>(`/cart/items/${productId}`, { method: "DELETE" });
+        setCart(nextCart);
+        setSummary(nextCart.items.length ? await fetchSummary(nextCart.items, form.paymentMethod, form.shippingOption) : null);
+        window.dispatchEvent(new Event("cart:changed"));
+        return;
+      }
+
+      const items = cart.items.filter((item) => item.product !== productId);
+      setGuestCart(items);
+      const nextCart = getGuestCart();
+      setCart(nextCart);
+      setSummary(nextCart.items.length ? await fetchSummary(nextCart.items, form.paymentMethod, form.shippingOption) : null);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not remove the item from checkout.");
+    }
+  };
 
   const updatePaymentMethod = async (paymentMethod: string) => {
     setForm((current) => ({ ...current, paymentMethod }));
@@ -155,7 +274,17 @@ export default function CheckoutPage() {
       }
 
       if (!getStoredUser()?.token) {
-        setGuestCart([]);
+        if (isBuyNowMode) {
+          clearBuyNowCart();
+        } else {
+          setGuestCart([]);
+        }
+        router.push(`/checkout?success=${order._id}`);
+        return;
+      }
+
+      if (isBuyNowMode) {
+        clearBuyNowCart();
       }
 
       router.push(`/orders/${order._id}`);
@@ -167,12 +296,43 @@ export default function CheckoutPage() {
   };
 
   const canPlaceOrder = Boolean(
-    cart?.items.length &&
+    !loading &&
+      cart?.items.length &&
       form.address.trim() &&
       form.city.trim() &&
       /^[0-9]{6}$/.test(form.postalCode.trim()) &&
       /^[0-9]{10}$/.test(form.phone.trim())
   );
+
+  if (successOrderId) {
+    return (
+      <main className="min-h-screen bg-gray-100 px-3 py-6 sm:px-4 md:px-6">
+        <div className="mx-auto max-w-3xl rounded-2xl bg-white p-6 text-center shadow-sm sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700">Order placed</p>
+          <h1 className="mt-3 text-2xl font-bold text-gray-950 sm:text-3xl">Your order is confirmed.</h1>
+          <p className="mt-3 text-sm leading-6 text-gray-600">
+            Keep this order ID for support and delivery updates: <span className="font-semibold text-gray-900">{successOrderId}</span>
+          </p>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => router.push("/products")}
+              className="rounded-lg bg-sky-400 px-4 py-3 text-sm font-semibold text-gray-950 hover:bg-sky-300"
+            >
+              Continue shopping
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/account")}
+              className="rounded-lg border border-gray-300 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Sign in to track orders
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-100 px-3 py-3 sm:px-4 md:px-6">
@@ -190,7 +350,35 @@ export default function CheckoutPage() {
         <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
           {/* Checkout Form */}
           <section className="min-w-0 rounded-2xl bg-white p-4 shadow-sm sm:p-5 md:p-6">
+            {loading ? (
+              <div className="rounded-xl bg-gray-50 p-6 text-center text-sm text-gray-500">Loading checkout...</div>
+            ) : !cart?.items.length ? (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center">
+                <p className="text-sm text-gray-600">There are no items ready for checkout.</p>
+                <div className="mt-4 flex justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/cart")}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-white"
+                  >
+                    Back to cart
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/products")}
+                    className="rounded-lg bg-sky-400 px-4 py-2 text-sm font-semibold text-gray-950 hover:bg-sky-300"
+                  >
+                    Browse products
+                  </button>
+                </div>
+              </div>
+            ) : (
             <form onSubmit={placeOrder} className="space-y-5">
+              {isBuyNowMode ? (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                  You are checking out a direct Buy Now selection. Quantity changes here will update this checkout only.
+                </div>
+              ) : null}
               {/* Address */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700">Shipping Address</label>
@@ -335,6 +523,7 @@ export default function CheckoutPage() {
                     : "Place COD Order"}
               </button>
             </form>
+            )}
           </section>
 
           {/* Order Summary - Sticky on desktop */}
@@ -346,7 +535,7 @@ export default function CheckoutPage() {
               {cart?.items.map((item) => (
                 <div key={item.product} className="flex items-start gap-3 text-sm">
                   <img
-                    src={resolveAssetUrl(item.image)}
+                    src={getCartItemImageUrl(item.image)}
                     alt={item.name}
                     className="h-14 w-14 shrink-0 rounded-md bg-gray-50 object-cover"
                     onError={(event) => {
@@ -356,7 +545,33 @@ export default function CheckoutPage() {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 text-sm font-semibold text-gray-900">{item.name}</p>
-                    <p className="mt-1 text-xs text-gray-500">Qty {item.qty}</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <div className="inline-flex items-center rounded-md border border-gray-300 bg-white">
+                        <button
+                          type="button"
+                          onClick={() => void updateQty(item.product, item.qty - 1)}
+                          className="h-7 w-7 text-base font-semibold text-gray-700 hover:bg-gray-100"
+                        >
+                          −
+                        </button>
+                        <span className="min-w-[2rem] text-center text-xs font-semibold text-gray-700">{item.qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => void updateQty(item.product, item.qty + 1)}
+                          disabled={item.qty >= item.countInStock}
+                          className="h-7 w-7 text-base font-semibold text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-300"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void removeItem(item.product)}
+                        className="text-xs font-semibold text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
                   <span className="shrink-0 text-sm font-medium text-gray-900">{formatPrice(item.price * item.qty)}</span>
                 </div>
@@ -399,5 +614,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-gray-100 p-6 text-gray-500 flex items-center justify-center">Loading checkout...</main>}>
+      <CheckoutPageContent />
+    </Suspense>
   );
 }

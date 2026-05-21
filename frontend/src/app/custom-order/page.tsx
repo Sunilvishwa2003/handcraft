@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import WhatsAppInquiryModal from "@/components/whatsapp/WhatsAppInquiryModal";
 import { CustomProjectInquiryType, CustomizationSelection } from "@/lib/types";
 import { inquiryTypeOptions } from "@/lib/customization";
