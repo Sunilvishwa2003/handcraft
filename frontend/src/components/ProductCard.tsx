@@ -26,36 +26,41 @@ export default function ProductCard({
 
   const addToCart = async () => {
     const user = getStoredUser();
+    try {
+      if (user?.token) {
+        await apiFetch<Cart>("/cart/items", {
+          method: "PUT",
+          body: JSON.stringify({ productId: product._id, qty: 1 }),
+        });
+        window.dispatchEvent(new Event("cart:changed"));
+        return;
+      }
 
-    if (user?.token) {
-      await apiFetch<Cart>("/cart/items", {
-        method: "PUT",
-        body: JSON.stringify({ productId: product._id, qty: 1 }),
-      });
+      const cart = getGuestCart();
+      const existing = cart.items.find((item) => item.product === product._id);
+      const firstImage = product.images?.[0];
+      const items = existing
+        ? cart.items.map((item) => (item.product === product._id ? { ...item, qty: item.qty + 1 } : item))
+        : [
+            ...cart.items,
+            {
+              product: product._id,
+              name: product.name,
+              image: getProductImageUrl(firstImage) || "",
+              price: product.price,
+              qty: 1,
+              countInStock: product.countInStock,
+            },
+          ];
+      setGuestCart(items);
       window.dispatchEvent(new Event("cart:changed"));
-      return;
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
     }
-
-    const cart = getGuestCart();
-    const existing = cart.items.find((item) => item.product === product._id);
-    const firstImage = product.images?.[0];
-    const items = existing
-      ? cart.items.map((item) => (item.product === product._id ? { ...item, qty: item.qty + 1 } : item))
-      : [
-          ...cart.items,
-          {
-            product: product._id,
-            name: product.name,
-            image: getProductImageUrl(firstImage) || "",
-            price: product.price,
-            qty: 1,
-            countInStock: product.countInStock,
-          },
-        ];
-    setGuestCart(items);
   };
 
-  const productImage = getProductImageUrl(product.images?.[0]) || '/mahabs-logo.svg';
+  const productImage =
+    product.images?.map((image) => getProductImageUrl(image)).find(Boolean) || '/mahabs-logo.svg';
 
   return (
     <motion.article 

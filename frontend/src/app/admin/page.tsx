@@ -1466,11 +1466,15 @@ const saveAd = async (event: FormEvent) => {
                   {filteredProducts.map((product) => (
                     <div key={product._id} className="grid gap-3 border-b border-gray-200 py-4 md:grid-cols-[72px_1fr_auto] md:items-center">
                       <div className="flex h-18 w-18 items-center justify-center rounded-md bg-gray-50">
-                        {product.images[0] ? (
-                          <img src={getProductImageUrl(product.images[0])} alt={product.name} className="h-full w-full object-contain" />
-                        ) : (
-                          <span className="text-xs text-gray-400">No image</span>
-                        )}
+                        {(() => {
+                          const firstImage = product.images.find((item) => Boolean(getProductImageUrl(item)));
+                          const imageUrl = firstImage ? getProductImageUrl(firstImage) : "";
+                          return imageUrl ? (
+                            <img src={imageUrl} alt={product.name} className="h-full w-full object-contain" />
+                          ) : (
+                            <span className="text-xs text-gray-400">No image</span>
+                          );
+                        })()}
                       </div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2">

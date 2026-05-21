@@ -13,36 +13,13 @@ type Props = {
 const DEFAULT_MESSAGE =
   "Note: Price varies based on size, stone type, design complexity, carving work, and finishing requirements. Contact us for an exact quotation.";
 
-function containsStoneKeyword(val?: string) {
-  if (!val) return false;
-  const s = String(val).toLowerCase();
-  return /stone|granite|marble|sandstone|soapstone|sculpture|carv|pillar|fountain/.test(s);
-}
-
 export default function StonePricingNotice({ product, message }: Props) {
-  const explicitFlag = product.isCustomPricing === true;
   const productMsg = product.pricingNoticeMessage || message || DEFAULT_MESSAGE;
 
-  const materialsFromCustomization = (product.customizationOptions?.materials || []).map((m) => String(m.label || '').toLowerCase());
-  const specs = (product.specs || []).join(' ').toLowerCase();
-  const tags = (product.tags || []).join(' ').toLowerCase();
-  const materialField = String((product as Product & { material?: string }).material || '').toLowerCase();
-
   const categorySlug = getProductCategorySlug(product.category);
-  const categoryName = getProductCategoryName(product.category).toLowerCase();
 
-  const matchesMaterial =
-    materialsFromCustomization.some((m: string) => /stone|granite|marble|sandstone|soapstone/.test(m)) ||
-    containsStoneKeyword(materialField) ||
-    containsStoneKeyword(specs) ||
-    containsStoneKeyword(tags) ||
-    containsStoneKeyword(product.name);
-  const isStoneCategory =
-    ["stone", "stone-name-board", "custom-stone"].includes(categorySlug) ||
-    /stone/.test(categorySlug) ||
-    /stone/.test(categoryName);
-
-  const shouldShow = explicitFlag || matchesMaterial || isStoneCategory;
+  // Show pricing notice only for stone and stone-name-board categories
+  const shouldShow = categorySlug === "stone" || categorySlug === "stone-name-board";
 
   if (!shouldShow) return null;
 

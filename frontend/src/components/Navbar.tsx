@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FormEvent, useEffect, useRef, useState } from 'react';
+import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, LogIn, UserRound } from 'lucide-react';
@@ -28,7 +28,20 @@ export default function Navbar() {
   const isLoggedIn = Boolean(user?.token);
   const userIsAdmin = isAdminEmail(user?.email);
   const menuQuery = useMenu();
-  const categories = menuQuery.isLoading ? [] : menuQuery.data?.length ? menuQuery.data : storefrontFeaturedCategories;
+  const categories = useMemo(() => {
+    const source = menuQuery.isLoading ? [] : menuQuery.data?.length ? menuQuery.data : storefrontFeaturedCategories;
+    const map = new Map<string, string>();
+
+    source.forEach((category) => {
+      const normalized = category.trim().toLowerCase();
+      if (!normalized || map.has(normalized)) {
+        return;
+      }
+      map.set(normalized, category.trim());
+    });
+
+    return Array.from(map.values());
+  }, [menuQuery.data, menuQuery.isLoading]);
 
   useEffect(() => {
     let mounted = true;

@@ -5,8 +5,8 @@ import Product3DViewer from "@/components/Product3DViewer";
 import ProductCard from "@/components/ProductCard";
 import ProductImageGallery from "@/components/product/ProductImageGallery";
 import WishlistButton from "@/components/WishlistButton";
-import { addRecentlyViewed, apiFetch, formatPrice, getProductImageAlt, getProductImageUrl, getStoredUser, isBackendAssetUrl } from "@/lib/api";
-import { canCustomizeProduct, getProductCategoryName, isProductFullyCustomizable } from "@/lib/catalog";
+import { addRecentlyViewed, apiFetch, formatPrice, getGuestCart, getProductImageAlt, getProductImageUrl, getStoredUser, isBackendAssetUrl, setGuestCart } from "@/lib/api";
+import { canCustomizeProduct, getProductCategoryName, getProductCategorySlug, isProductFullyCustomizable } from "@/lib/catalog";
 import StonePricingNotice from "@/components/product/StonePricingNotice";
 import { Cart, Product, Review } from "@/lib/types";
 import { MessageCircle } from "lucide-react";
@@ -47,12 +47,41 @@ export default function ProductDetailClient({ productId }: { productId: string }
     if (!product) {
       return;
     }
+
+    const user = getStoredUser();
     try {
-      await apiFetch<Cart>("/cart/items", { method: "PUT", body: JSON.stringify({ productId: product._id, qty: 1 }) });
+      if (user?.token) {
+        await apiFetch<Cart>("/cart/items", {
+          method: "PUT",
+          body: JSON.stringify({ productId: product._id, qty: 1 }),
+        });
+      } else {
+        const cart = getGuestCart();
+        const existing = cart.items.find((item) => item.product === product._id);
+        const firstImage = product.images?.[0];
+        const items = existing
+          ? cart.items.map((item) =>
+              item.product === product._id ? { ...item, qty: item.qty + 1 } : item
+            )
+          : [
+              ...cart.items,
+              {
+                product: product._id,
+                name: product.name,
+                image: getProductImageUrl(firstImage) || "",
+                price: product.price,
+                qty: 1,
+                countInStock: product.countInStock,
+              },
+            ];
+        setGuestCart(items);
+      }
+
       window.dispatchEvent(new Event("cart:changed"));
       setMessage("Added to cart.");
-    } catch {
-      setMessage("Login to sync your cart across devices.");
+    } catch (error) {
+      console.error(error);
+      setMessage(error instanceof Error ? error.message : "Could not add to cart.");
     }
   };
 
@@ -271,6 +300,23 @@ Thank you 🙏`;
                   >
                     Add to Cart
                   </button>
+                  {getProductCategorySlug(product.category) === "home-decor" && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await addToCart();
+                        } catch (error) {
+                          console.error(error);
+                        }
+                        window.location.href = '/checkout';
+                      }}
+                      disabled={product.countInStock <= 0}
+                      className="rounded-lg bg-emerald-500 py-3 font-bold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 transition-colors"
+                    >
+                      Buy Now
+                    </button>
+                  )}
                   <WishlistButton
                     productId={productId}
                     variant="full"
