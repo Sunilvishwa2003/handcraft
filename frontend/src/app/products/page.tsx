@@ -28,6 +28,7 @@ const sorts = [
 function ProductsPageContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categoryAds, setCategoryAds] = useState<Ad[]>([]);
+  const [categoryAdsLoading, setCategoryAdsLoading] = useState<boolean>(false);
   const [facets, setFacets] = useState<Facets>({ categories: [], brands: [], priceRange: { min: 0, max: 0 } });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -446,10 +447,24 @@ function ProductsPageContent() {
                       <Link href={slide.href} aria-label={`Open ${slide.title}`} className="absolute inset-0 z-10" />
                       <div className="relative w-full overflow-hidden h-[220px] md:h-[350px] lg:h-[550px] bg-slate-100">
                         <picture>
-                          <source media="(max-width: 767px)" srcSet={slide.mobileImage || slide.desktopImage} />
-                          <source media="(max-width: 1023px)" srcSet={slide.tabletImage || slide.desktopImage} />
+                          <source
+                            media="(max-width: 767px)"
+                            srcSet={
+                              'mobileImage' in slide
+                                ? slide.mobileImage || slide.desktopImage || (slide as any).imageUrl
+                                : (slide as any).imageUrl
+                            }
+                          />
+                          <source
+                            media="(max-width: 1023px)"
+                            srcSet={
+                              'tabletImage' in slide
+                                ? slide.tabletImage || slide.desktopImage || (slide as any).imageUrl
+                                : (slide as any).imageUrl
+                            }
+                          />
                           <img
-                            src={slide.desktopImage || slide.imageUrl}
+                            src={'desktopImage' in slide ? slide.desktopImage || (slide as any).imageUrl : (slide as any).imageUrl}
                             alt={slide.title}
                             className="w-full h-full object-cover object-center"
                             loading={index === 0 ? "eager" : "lazy"}
