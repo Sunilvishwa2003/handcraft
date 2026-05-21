@@ -158,11 +158,6 @@ export default function Navbar() {
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-[linear-gradient(135deg,rgba(125,211,252,0.35),rgba(255,255,255,0.97)_40%,rgba(56,189,248,0.2))] shadow-[0_20px_45px_rgba(2,6,23,0.34)]" />
               <div className="relative flex items-center gap-2 rounded-full border border-white/30 bg-white/95 px-3 py-2 backdrop-blur-sm transition duration-200 focus-within:border-sky-300 focus-within:shadow-[0_0_0_3px_rgba(125,211,252,0.26)]">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-950 text-sky-300">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </span>
                 <input
                   type="text"
                   value={query}

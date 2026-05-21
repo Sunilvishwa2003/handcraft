@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { DragEvent as ReactDragEvent, FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
-import { apiFetch, formatPrice, getApiUrl, getProductImageUrl, getProductPrimaryImageUrl, getStoredUser, resolveAssetUrl } from "@/lib/api";
+import { apiFetch, formatPrice, getApiUrl, getProductImageUrl, getStoredUser, PRODUCT_IMAGE_PLACEHOLDER, resolveAssetUrl } from "@/lib/api";
 import ProjectAccuracyChart from "@/components/ProjectAccuracyChart";
 import { Ad, CustomProject, CustomProjectStage, Order, Product } from "@/lib/types";
 
@@ -219,28 +219,52 @@ const sortByNewest = <T extends { createdAt?: string }>(items: T[]) =>
     return rightTime - leftTime;
   });
 
-const formFromProduct = (product: Product): ProductFormState => ({
-  name: product.name,
-  brand: product.brand,
-  category: typeof product.category === "string" ? product.category : product.category?.name || "",
-  subcategory: product.subcategory || "",
-  description: product.description,
-  price: String(product.price || ""),
-  originalPrice: product.originalPrice ? String(product.originalPrice) : "",
-  countInStock: String(product.countInStock || 0),
-  stockAlertThreshold: String(product.stockAlertThreshold ?? 5),
-  availability: product.availability,
-  featured: Boolean(product.featured),
-  model3dUrl: product.model3dUrl || "",
-  images: product.images?.length
-    ? product.images.map((image) => getProductImageUrl(image)).filter(Boolean)
-    : [""],
-  specs: product.specs.join("\n"),
-  tags: product.tags.join(", "),
-  semanticKeywords: (product.semanticKeywords || []).join(", "),
-  isCustomPricing: Boolean(product.isCustomPricing),
-  pricingNoticeMessage: product.pricingNoticeMessage || "",
+const getNormalizedAdminProductImages = (product?: Pick<Product, "images" | "image" | "thumbnail" | "imageUrl"> | null) => {
+  const images = Array.isArray(product?.images) ? product.images.map((image) => getProductImageUrl(image)).filter(Boolean) : [];
+
+  if (images.length) {
+    return Array.from(new Set(images));
+  }
+
+  const legacyFallbacks = [product?.image, product?.thumbnail, product?.imageUrl]
+    .map((image) => (typeof image === "string" ? resolveAssetUrl(image.trim()) : ""))
+    .filter(Boolean);
+
+  return Array.from(new Set(legacyFallbacks));
+};
+
+const normalizeAdminProduct = (product: Product): Product => ({
+  ...product,
+  images: getNormalizedAdminProductImages(product),
 });
+
+const getAdminProductImage = (product?: Pick<Product, "images" | "image" | "thumbnail" | "imageUrl"> | null) =>
+  getNormalizedAdminProductImages(product)[0] || PRODUCT_IMAGE_PLACEHOLDER;
+
+const formFromProduct = (product: Product): ProductFormState => {
+  const images = getNormalizedAdminProductImages(product);
+
+  return {
+    name: product.name,
+    brand: product.brand,
+    category: typeof product.category === "string" ? product.category : product.category?.name || "",
+    subcategory: product.subcategory || "",
+    description: product.description,
+    price: String(product.price || ""),
+    originalPrice: product.originalPrice ? String(product.originalPrice) : "",
+    countInStock: String(product.countInStock || 0),
+    stockAlertThreshold: String(product.stockAlertThreshold ?? 5),
+    availability: product.availability,
+    featured: Boolean(product.featured),
+    model3dUrl: product.model3dUrl || "",
+    images: images.length ? images : [""],
+    specs: product.specs.join("\n"),
+    tags: product.tags.join(", "),
+    semanticKeywords: (product.semanticKeywords || []).join(", "),
+    isCustomPricing: Boolean(product.isCustomPricing),
+    pricingNoticeMessage: product.pricingNoticeMessage || "",
+  };
+};
 
 const buildProductPayload = (form: ProductFormState) => {
   const price = Number(form.price || 0);
@@ -348,7 +372,7 @@ export default function AdminPage() {
       apiFetch<{ success: boolean; groups: CategoryGroup[] }>("/admin/products/grouped"),
     ]);
 
-    const productList = sortByNewest(productResult.status === "fulfilled" ? productResult.value : []);
+    const productList = sortByNewest(productResult.status === "fulfilled" ? productResult.value.map((product) => normalizeAdminProduct(product)) : []);
     const orderList = sortByNewest(orderResult.status === "fulfilled" ? orderResult.value : []);
     const customProjectList = sortByNewest(customProjectResult.status === "fulfilled" ? customProjectResult.value : []);
     const adList = sortByNewest(adResult.status === "fulfilled" ? adResult.value : []);
@@ -605,9 +629,12 @@ export default function AdminPage() {
         method: editingProductId ? "PUT" : "POST",
         body: JSON.stringify(payload),
       });
+      const normalizedSavedProduct = normalizeAdminProduct(saved);
 
       setProducts((items) =>
-        editingProductId ? items.map((product) => (product._id === editingProductId ? saved : product)) : [saved, ...items],
+        editingProductId
+          ? items.map((product) => (product._id === editingProductId ? normalizedSavedProduct : product))
+          : [normalizedSavedProduct, ...items],
       );
       setNotice({ tone: "success", text: editingProductId ? "Product updated." : "Product created." });
       resetProductForm();
@@ -1363,11 +1390,15 @@ const saveAd = async (event: FormEvent) => {
                 <p className="text-sm font-semibold text-gray-900">Preview</p>
                 <div className="mt-3 grid grid-cols-[72px_1fr] gap-3">
                   <div className="flex h-18 w-18 items-center justify-center rounded-md bg-white">
-                    {productForm.images[0]?.trim() ? (
-                      <img src={resolveAssetUrl(productForm.images[0])} alt={productForm.name || "Preview"} className="h-full w-full object-contain" />
-                    ) : (
-                      <span className="text-xs text-gray-400">No image</span>
-                    )}
+                    <img
+                      src={resolveAssetUrl(productForm.images[0] || "") || PRODUCT_IMAGE_PLACEHOLDER}
+                      alt={productForm.name || "Preview"}
+                      className="h-full w-full rounded-md object-cover"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                      }}
+                    />
                   </div>
                   <div>
                     <div className="mb-2 flex items-center gap-2">
@@ -1467,12 +1498,12 @@ const saveAd = async (event: FormEvent) => {
                     <div key={product._id} className="grid gap-3 border-b border-gray-200 py-4 md:grid-cols-[72px_1fr_auto] md:items-center">
                       <div className="flex h-18 w-18 items-center justify-center rounded-md bg-gray-50">
                         <img
-                          src={getProductPrimaryImageUrl(product)}
+                          src={getAdminProductImage(product)}
                           alt={product.name}
-                          className="h-full w-full object-contain"
+                          className="h-full w-full rounded-md object-cover"
                           onError={(event) => {
                             event.currentTarget.onerror = null;
-                            event.currentTarget.src = "/mahabs-logo.svg";
+                            event.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
                           }}
                         />
                       </div>

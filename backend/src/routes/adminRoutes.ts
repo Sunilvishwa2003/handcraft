@@ -10,6 +10,7 @@ import upload from '../middleware/uploadMiddleware';
 import asyncHandler from '../utils/asyncHandler';
 import { normalizeCategorySlug } from '../utils/category';
 import { uploadFilesToCloudinary, type LocalUploadFile } from '../utils/cloudinaryUploads';
+import { buildProductImageArray, type ProductImageCarrier } from '../utils/productImage';
 
 const router = express.Router();
 
@@ -80,6 +81,11 @@ const normalizeProductPayload = (input: Record<string, unknown>) => {
   };
 };
 
+const serializeAdminProduct = <T extends ProductImageCarrier>(product: T) => ({
+  ...(product as T & object),
+  images: buildProductImageArray(product as ProductImageCarrier, ''),
+});
+
 router.use(protect, admin);
 
 router.get(
@@ -144,8 +150,8 @@ router.get(
 router.get(
   '/products',
   asyncHandler(async (_req, res) => {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
+    const products = await Product.find().sort({ createdAt: -1 }).lean();
+    res.json(products.map((product) => serializeAdminProduct(product)));
   })
 );
 
