@@ -1,0 +1,10 @@
+{
+  "name": "e-website",
+  "private": true,
+  "scripts": {
+    "frontend:dev": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build"
+  }
+}

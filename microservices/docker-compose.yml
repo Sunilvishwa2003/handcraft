@@ -1,0 +1,158 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn api_gateway.app.main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8000:8000"
+    depends_on:
+      - catalog-service
+      - user-service
+      - cart-order-service
+      - payment-service
+      - inventory-service
+      - ai-service
+      - media-service
+
+  catalog-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn catalog_service.app.main:app --host 0.0.0.0 --port 8001 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mongo
+      - elasticsearch
+
+  user-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn user_service.app.main:app --host 0.0.0.0 --port 8002 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8002:8002"
+    depends_on:
+      - mongo
+      - redis
+
+  cart-order-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn cart_order_service.app.main:app --host 0.0.0.0 --port 8003 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8003:8003"
+    depends_on:
+      - mongo
+      - redis
+
+  payment-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn payment_service.app.main:app --host 0.0.0.0 --port 8004 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8004:8004"
+    depends_on:
+      - mongo
+
+  inventory-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn inventory_service.app.main:app --host 0.0.0.0 --port 8005 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8005:8005"
+    depends_on:
+      - mongo
+      - redis
+
+  ai-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn ai_service.app.main:app --host 0.0.0.0 --port 8006 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8006:8006"
+    depends_on:
+      - mongo
+      - redis
+      - elasticsearch
+
+  media-service:
+    build:
+      context: ..
+      dockerfile: microservices/Dockerfile
+    command: uvicorn media_service.app.main:app --host 0.0.0.0 --port 8007 --reload
+    env_file:
+      - .env.example
+    ports:
+      - "8007:8007"
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    profiles: ["streaming"]
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    profiles: ["streaming"]
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+volumes:
+  mongo_data:
+  elastic_data:

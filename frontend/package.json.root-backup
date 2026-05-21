@@ -1,0 +1,26 @@
+{
+  "name": "e-website",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "lint": "npm --prefix frontend run lint",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:start": "npm --prefix frontend run start",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:build": "npm --prefix backend run build",
+    "backend:start": "npm --prefix backend run start",
+    "backend:test": "npm --prefix backend run test"
+  },
+  "dependencies": {
+    "axios": "^1.16.0",
+    "resend": "^6.12.3"
+  }
+}

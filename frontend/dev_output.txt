@@ -1,0 +1,20 @@
+
+> frontend@0.1.0 dev
+> npx kill-port 3000 && next dev
+
+Process on port 3000 killed
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.8:3000
+- Environments: .env.local
+✓ Ready in 417ms
+Creating turbopack project { dir: 'D:\\e-website\\frontend', testMode: true }
+
+[?25h
+npm error Lifecycle script `dev` failed with error:
+npm error code 1
+npm error path D:\e-website\frontend
+npm error workspace frontend@0.1.0
+npm error location D:\e-website\frontend
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c npx kill-port 3000 && next dev

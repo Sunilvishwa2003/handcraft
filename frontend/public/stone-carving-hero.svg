@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none">
+  <defs>
+    <linearGradient id="stone-base" x1="165" y1="98" x2="1472" y2="902" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2E3945"/>
+      <stop offset="0.45" stop-color="#25303C"/>
+      <stop offset="1" stop-color="#1A242E"/>
+    </linearGradient>
+    <radialGradient id="amber-halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(404 304) rotate(62.4) scale(379.406 413.117)">
+      <stop stop-color="#D0B38A" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#D0B38A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sky-halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1245 236) rotate(128.2) scale(278.64 309.43)">
+      <stop stop-color="#82C8E6" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#82C8E6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="chisel-grid" width="168" height="168" patternUnits="userSpaceOnUse">
+      <path d="M0 84H168M84 0V168" stroke="#F6E0BC" stroke-opacity=".045"/>
+      <path d="M28 14L42 0M0 42L42 0M126 168L168 126M140 168L168 140" stroke="#B99A73" stroke-opacity=".06"/>
+      <path d="M18 120C44 90 64 86 92 104C120 122 138 118 152 98" stroke="#E6CCAA" stroke-opacity=".05"/>
+    </pattern>
+    <filter id="grain" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency=".95" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0 .08 .14"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#stone-base)"/>
+  <rect width="1600" height="1000" fill="url(#amber-halo)"/>
+  <rect width="1600" height="1000" fill="url(#sky-halo)"/>
+  <rect width="1600" height="1000" fill="url(#chisel-grid)"/>
+
+  <g opacity=".22" stroke="#D9C3A4">
+    <path d="M123 733C221 616 330 555 454 555C566 555 650 604 708 683" stroke-width="2.6"/>
+    <path d="M168 777C253 675 351 623 456 623C551 623 626 658 679 722" stroke-width="1.8"/>
+    <path d="M244 326C301 243 381 201 478 201C596 201 686 262 747 377" stroke-width="2.3"/>
+    <path d="M987 240C1033 165 1101 128 1194 128C1297 128 1387 181 1456 286" stroke-width="2.2"/>
+    <path d="M1008 720C1076 626 1167 579 1279 579C1387 579 1469 622 1538 709" stroke-width="1.9"/>
+  </g>
+
+  <g opacity=".21" stroke="#EBD7B4">
+    <circle cx="372" cy="288" r="142" stroke-width="1.4"/>
+    <circle cx="372" cy="288" r="111" stroke-width="1.2"/>
+    <circle cx="372" cy="288" r="72" stroke-width="1.2"/>
+    <path d="M372 162V414M246 288H498M282 198L462 378M462 198L282 378" stroke-width="1.1"/>
+    <path d="M330 196C339 225 354 240 372 240C390 240 405 225 414 196" stroke-width="1.5"/>
+    <path d="M330 380C339 351 354 336 372 336C390 336 405 351 414 380" stroke-width="1.5"/>
+  </g>
+
+  <g opacity=".18" stroke="#D6BA8F">
+    <path d="M1074 500C1098 459 1133 439 1178 439C1221 439 1256 459 1281 500" stroke-width="2.6"/>
+    <path d="M1036 538C1072 470 1120 436 1179 436C1237 436 1284 470 1322 538" stroke-width="2"/>
+    <path d="M1000 576C1048 484 1108 438 1179 438C1249 438 1309 484 1358 576" stroke-width="1.4"/>
+    <path d="M1044 606H1310" stroke-width="1.2"/>
+    <path d="M1083 640H1271" stroke-width="1.1"/>
+  </g>
+
+  <g opacity=".15" stroke="#F2E0BE">
+    <path d="M76 894C214 804 326 771 412 796C499 821 575 886 671 920" stroke-width="1.5"/>
+    <path d="M875 859C953 777 1056 736 1185 736C1316 736 1432 781 1531 870" stroke-width="1.6"/>
+    <path d="M857 823C936 748 1044 711 1181 711C1322 711 1439 761 1539 846" stroke-width="1"/>
+  </g>
+
+  <g opacity=".12" stroke="#B0916B" stroke-linecap="round">
+    <path d="M112 182L177 228"/>
+    <path d="M136 144L219 187"/>
+    <path d="M1341 132L1415 166"/>
+    <path d="M1253 215L1338 261"/>
+    <path d="M1316 811L1395 856"/>
+    <path d="M276 856L332 901"/>
+    <path d="M749 159L815 194"/>
+  </g>
+
+  <g opacity=".16" fill="#E8CFAB">
+    <path d="M1194 329L1210 362L1246 367L1220 392L1226 429L1194 412L1161 429L1167 392L1140 367L1177 362L1194 329Z"/>
+    <path d="M558 560L572 588L603 592L580 613L585 645L558 630L530 645L535 613L512 592L543 588L558 560Z"/>
+  </g>
+
+  <rect width="1600" height="1000" filter="url(#grain)" opacity=".55"/>
+</svg>

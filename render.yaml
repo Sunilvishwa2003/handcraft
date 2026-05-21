@@ -1,0 +1,31 @@
+services:
+  - type: web_service
+    name: e-website-backend
+    env: node
+    plan: free
+    branch: main
+    root: backend
+    buildCommand: npm install
+    startCommand: npm run start
+    envVars:
+      - key: MONGO_URI
+      - key: JWT_SECRET
+      - key: CLIENT_URL
+      - key: RAZORPAY_KEY_ID
+      - key: RAZORPAY_KEY_SECRET
+      - key: NODE_ENV
+      - key: PORT
+
+  - type: web_service
+    name: e-website-frontend
+    env: node
+    plan: free
+    branch: main
+    root: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+      - key: NEXT_PUBLIC_URL
+      - key: NEXT_PUBLIC_RAZORPAY_KEY_ID
+      - key: NODE_ENV
