@@ -4,7 +4,7 @@ export interface IBehaviorEvent extends Document {
   user?: mongoose.Types.ObjectId;
   sessionId?: string;
   product?: mongoose.Types.ObjectId;
-  eventType: 'view' | 'search' | 'cart' | 'wishlist' | 'purchase' | 'checkout';
+  eventType: 'view' | 'search' | 'cart' | 'wishlist' | 'purchase' | 'checkout' | 'ai-chat';
   query?: string;
   metadata: Record<string, unknown>;
   riskScore: number;
@@ -17,7 +17,7 @@ const behaviorEventSchema = new Schema<IBehaviorEvent>(
     product: { type: Schema.Types.ObjectId, ref: 'Product' },
     eventType: {
       type: String,
-      enum: ['view', 'search', 'cart', 'wishlist', 'purchase', 'checkout'],
+      enum: ['view', 'search', 'cart', 'wishlist', 'purchase', 'checkout', 'ai-chat'],
       required: true,
       index: true,
     },

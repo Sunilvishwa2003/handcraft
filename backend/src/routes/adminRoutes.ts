@@ -75,7 +75,7 @@ const normalizeProductPayload = (input: Record<string, unknown>) => {
     keywords: normalizeStringArray(input.keywords),
     shortDescription: input.shortDescription ? String(input.shortDescription).trim() : undefined,
     status: ['active', 'inactive', 'draft'].includes(String(input.status || '').trim().toLowerCase())
-      ? String(input.status).trim().toLowerCase()
+      ? (String(input.status).trim().toLowerCase() as 'active' | 'inactive' | 'draft')
       : 'active',
   };
 };
