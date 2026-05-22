@@ -34,6 +34,9 @@
     "zustand": "^5.0.13",
     "react-icons": "^4.11.0"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^25.7.0",

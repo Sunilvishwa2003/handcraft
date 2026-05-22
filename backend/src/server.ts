@@ -1,7 +1,12 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
 import path from 'path';
+import dotenv from 'dotenv';
+
+// Load environment variables as early as possible so imported modules can rely on them
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+dotenv.config();
+
+import express from 'express';
+import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import connectDB from './config/db';
@@ -21,8 +26,23 @@ import customOrdersRoutes from './routes/customOrdersRoutes';
 import { errorHandler, notFound } from './middleware/errorMiddleware';
 import { setupSocket } from './services/realtimeService';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
-dotenv.config();
+// Environment validation
+const requiredEnvs = [
+  'MONGODB_URI',
+  'JWT_SECRET',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET',
+  'CLIENT_URL',
+];
+
+const missing = requiredEnvs.filter((name) => !process.env[name]);
+if (missing.length) {
+  console.error('Missing required environment variables:', missing.join(', '));
+  console.error(`Loaded ${requiredEnvs.length - missing.length}/${requiredEnvs.length} required env vars.`);
+} else {
+  console.log(`All required environment variables present (${requiredEnvs.length}).`);
+}
 
 connectDB();
 

@@ -202,6 +202,24 @@ const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUr
     payload.images = normalizeImages(input.images);
   }
 
+  // Ensure images are stored as an array of objects { url, alt }
+  if (payload.images !== undefined) {
+    try {
+      const imgs = Array.isArray(payload.images) ? payload.images : [payload.images];
+      payload.images = imgs.map((it) => {
+        if (!it) return { url: '', alt: '' };
+        if (typeof it === 'string') return { url: String(it).trim(), alt: '' };
+        if (typeof it === 'object') {
+          return { url: String((it as any).url || ''), alt: String((it as any).alt || '') };
+        }
+        return { url: String(it), alt: '' };
+      });
+    } catch (e) {
+      // fallback - ensure at least an empty array
+      payload.images = [];
+    }
+  }
+
   if (input.specs !== undefined) {
     payload.specs = normalizeStringArray(input.specs, '\n');
   }

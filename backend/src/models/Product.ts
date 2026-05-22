@@ -98,13 +98,7 @@ const productSchema = new Schema<IProduct>(
     keywords: { type: [String], default: [], index: true },
     shortDescription: { type: String, trim: true },
     images: {
-      type: [
-        {
-          url: { type: String },
-          alt: { type: String, default: '' },
-        },
-        String,
-      ],
+      type: [Schema.Types.Mixed],
       required: true,
       default: [],
     },
@@ -150,12 +144,9 @@ productSchema.index({
 
 // Additional indexes for faster lookup
 productSchema.index({ name: 1 });
-productSchema.index({ slug: 1 });
 productSchema.index({ category: 1 });
 productSchema.index({ tags: 1 });
-productSchema.index({ keywords: 1 });
 productSchema.index({ semanticKeywords: 1 });
-productSchema.index({ status: 1 });
 
 // Pre-save hook: normalize images array to objects { url, alt }
 productSchema.pre('save', function (this: any, next: any) {

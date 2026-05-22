@@ -53,7 +53,7 @@ export const calculateOrderTotals = async (
   const discountPrice = getCouponDiscount(subtotal, coupon);
   const netSubtotal = subtotal - discountPrice;
   const taxPrice = 0;
-  const shippingPrice = roundMoney(Math.max(itemCount, 0) * shippingRates.standard);
+  const shippingPrice = roundMoney(Math.max(itemCount, 0) * shippingRates[shippingOption]);
   const totalPrice = roundMoney(netSubtotal + taxPrice + shippingPrice);
 
   return {
