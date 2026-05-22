@@ -277,7 +277,7 @@ const formFromProduct = (product: Product): ProductFormState => {
 };
 
 const buildProductPayload = (form: ProductFormState) => {
-  const price = Number(form.price || 0);
+  const price = form.useApproxPrice ? 0 : Number(form.price || 0);
   const originalPrice = Number(form.originalPrice || 0);
   const countInStock = Number(form.countInStock || 0);
   const stockAlertThreshold = Number(form.stockAlertThreshold || 0);

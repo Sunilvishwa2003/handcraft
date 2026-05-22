@@ -189,6 +189,12 @@ productSchema.pre('save', function (this: any, next: any) {
     }
   }
 
+  // When approximate pricing is enabled, normalize the main price to 0
+  // so that site displays approx ranges instead of a single price.
+  if (this.useApproxPrice) {
+    this.price = 0;
+  }
+
   next();
 });
 

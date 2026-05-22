@@ -127,16 +127,22 @@ const getUploadedImageUrls = async (req: express.Request, context: string) => {
     return [];
   }
 
-  const { uploaded, failed } = await uploadFilesToCloudinary(files, {
-    folder: 'products',
-    context,
-  });
+  try {
+    const { uploaded, failed } = await uploadFilesToCloudinary(files, {
+      folder: 'products',
+      context,
+    });
 
-  if (failed.length) {
-    throw new Error(`Cloudinary failed to upload ${failed.length} image(s). Check backend logs for details.`);
+    if (failed.length) {
+      console.error(`[product:create] Cloudinary failed to upload ${failed.length} image(s). Proceeding with successful uploads.`, failed.map((f) => f.originalName));
+    }
+
+    return uploaded.map((file) => file.url);
+  } catch (err) {
+    console.error('[product:create] Unexpected error during Cloudinary uploads:', err instanceof Error ? err.stack || err.message : err);
+    // Don't fail product creation solely because Cloudinary had an issue.
+    return [];
   }
-
-  return uploaded.map((file) => file.url);
 };
 
 const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUrls: string[] = []) => {
@@ -274,6 +280,11 @@ const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUr
     payload.useApproxPrice = useApproxPrice;
     payload.approxPriceMin = useApproxPrice ? approxPriceMin : undefined;
     payload.approxPriceMax = useApproxPrice ? approxPriceMax : undefined;
+
+    // When approx pricing is enabled, ensure price is set to 0
+    if (useApproxPrice) {
+      payload.price = 0;
+    }
   }
 
   return payload;
@@ -651,9 +662,14 @@ router.post(
       const product = await Product.create(payload);
       res.status(201).json(product);
     } catch (err) {
-      // Log full error to assist debugging; rethrow to let asyncHandler/errorMiddleware serialize the message.
-      console.error('[product:create] ERROR while creating product:', err instanceof Error ? err.stack || err.message : err);
+      console.error('PRODUCT CREATE ERROR:', err instanceof Error ? err.stack || err.message : err);
       console.error('[product:create] request body snapshot:', JSON.stringify(req.body || {}).slice(0, 2000));
+
+      if (err && typeof err === 'object' && (err as any).name === 'ValidationError') {
+        res.status(400).json({ success: false, message: (err as any).message });
+        return;
+      }
+
       throw err;
     }
   })
@@ -665,15 +681,24 @@ router.put(
   admin,
   upload.array('assets', 10),
   asyncHandler(async (req, res) => {
-    // Product updates intentionally replace older image arrays when new files are uploaded.
-    const uploadedImageUrls = await getUploadedImageUrls(req, `product-update:${String(req.params.id)}`);
-    const payload = normalizeProductPayload(req.body, uploadedImageUrls);
-    const product = await Product.findByIdAndUpdate(req.params.id, payload, { returnDocument: 'after', runValidators: true });
-    if (!product) {
-      res.status(404);
-      throw new Error('Product not found');
+    try {
+      // Product updates intentionally replace older image arrays when new files are uploaded.
+      const uploadedImageUrls = await getUploadedImageUrls(req, `product-update:${String(req.params.id)}`);
+      const payload = normalizeProductPayload(req.body, uploadedImageUrls);
+      const product = await Product.findByIdAndUpdate(req.params.id, payload, { returnDocument: 'after', runValidators: true });
+      if (!product) {
+        res.status(404);
+        throw new Error('Product not found');
+      }
+      res.json(product);
+    } catch (err) {
+      console.error('PRODUCT UPDATE ERROR:', err instanceof Error ? err.stack || err.message : err);
+      if (err && typeof err === 'object' && (err as any).name === 'ValidationError') {
+        res.status(400).json({ success: false, message: (err as any).message });
+        return;
+      }
+      throw err;
     }
-    res.json(product);
   })
 );
 

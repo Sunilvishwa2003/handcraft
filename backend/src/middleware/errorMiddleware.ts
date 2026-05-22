@@ -8,8 +8,14 @@ export const notFound = (req: Request, res: Response, next: NextFunction) => {
 
 export const errorHandler = (err: Error, req: Request, res: Response, _next: NextFunction) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode).json({
-    message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
-  });
+  const payload: any = {
+    success: false,
+    message: err.message || 'Internal server error',
+  };
+
+  if (process.env.NODE_ENV !== 'production') {
+    payload.stack = err.stack;
+  }
+
+  res.status(statusCode).json(payload);
 };

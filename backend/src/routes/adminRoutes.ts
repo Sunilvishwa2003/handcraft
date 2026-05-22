@@ -53,13 +53,17 @@ const normalizeProductPayload = (input: Record<string, unknown>) => {
     ? input.images.map((item) => String(item).trim()).filter(Boolean)
     : normalizeStringArray(input.images, '\n');
 
+  const basePrice = Number(input.price || 0);
+
+  const useApproxPriceFlag = Boolean(input.useApproxPrice);
+
   return {
-    name: String(input.name || '').trim(),
-    brand: String(input.brand || 'Handcrafts').trim(),
-    category: normalizeCategorySlug(input.category || 'home-decor'),
+  name: String(input.name || '').trim(),
+  brand: String(input.brand || 'Handcrafts').trim(),
+  category: normalizeCategorySlug(input.category || 'home-decor'),
     subcategory: input.subcategory ? String(input.subcategory).trim() : undefined,
     description: String(input.description || '').trim(),
-    price,
+    price: useApproxPriceFlag ? 0 : basePrice,
     originalPrice: originalPrice > 0 ? originalPrice : undefined,
     discountPercentage: originalPrice > price && originalPrice > 0 ? Math.round(((originalPrice - price) / originalPrice) * 100) : Number(input.discountPercentage || 0),
     countInStock,
@@ -76,9 +80,9 @@ const normalizeProductPayload = (input: Record<string, unknown>) => {
     keywords: normalizeStringArray(input.keywords),
     shortDescription: input.shortDescription ? String(input.shortDescription).trim() : undefined,
     pricingNoticeMessage: input.pricingNoticeMessage !== undefined ? String(input.pricingNoticeMessage || '').trim() : undefined,
-    useApproxPrice: Boolean(input.useApproxPrice),
-    approxPriceMin: input.useApproxPrice ? Number(input.approxPriceMin || 0) : undefined,
-    approxPriceMax: input.useApproxPrice ? Number(input.approxPriceMax || 0) : undefined,
+    useApproxPrice: useApproxPriceFlag,
+    approxPriceMin: useApproxPriceFlag ? Number(input.approxPriceMin || 0) : undefined,
+    approxPriceMax: useApproxPriceFlag ? Number(input.approxPriceMax || 0) : undefined,
     status: ['active', 'inactive', 'draft'].includes(String(input.status || '').trim().toLowerCase())
       ? (String(input.status).trim().toLowerCase() as 'active' | 'inactive' | 'draft')
       : 'draft',
