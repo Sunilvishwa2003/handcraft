@@ -1,4 +1,4 @@
-import { Cart, Product, User } from "./types";
+import { Cart, Product, User, CartItem } from "./types";
 import { normalizeUserAdminState } from "./isAdmin";
 
 const DEFAULT_BACKEND_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT || "5001";
