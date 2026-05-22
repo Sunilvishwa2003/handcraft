@@ -18,7 +18,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       {/* Promotional Banner - Mobile Optimized */}
       <div className="bg-gradient-to-r from-sky-500 via-cyan-400 to-sky-300 py-1.5 text-center text-xs sm:text-sm font-bold text-slate-950 overflow-hidden">
         <span className="inline-block animate-pulse">
-          Unlock 10% off with code: <span className="rounded bg-slate-950 px-2 py-0.5 uppercase tracking-wide text-cyan-100">DYNAMIC10</span>
+          🎨 Handcrafted Art & Sculptures | Free Shipping on Orders Above ₹5000
         </span>
       </div>
 

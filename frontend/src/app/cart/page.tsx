@@ -143,10 +143,12 @@ export default function CartPage() {
                       <img
                         src={getCartItemImageUrl(item.image)}
                         alt={item.name}
-                        className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gray-50"
+                        className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gradient-to-br from-gray-100 to-gray-200"
+                        loading="lazy"
                         onError={(event) => {
                           event.currentTarget.onerror = null;
                           event.currentTarget.src = '/mahabs-logo.svg';
+                          event.currentTarget.className = 'h-20 w-20 sm:h-24 sm:w-24 object-contain p-2 rounded-md bg-gray-100';
                         }}
                       />
                     </Link>
