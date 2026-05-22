@@ -253,7 +253,7 @@ function ProductsPageContent() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 p-2 sm:p-3 md:p-6">
+    <main className="min-h-screen overflow-x-hidden bg-slate-50 px-4 py-3 md:px-8 md:py-6">
       <div className="mx-auto max-w-7xl min-w-0">
         {/* Mobile Filter Toggle & Sort Bar - Sticky */}
         <div className="sticky top-[120px] sm:top-[140px] z-20 bg-slate-50/95 backdrop-blur-sm py-2 mb-3">
@@ -457,7 +457,7 @@ function ProductsPageContent() {
             {categoryAdsLoading && shouldShowCategorySlider ? (
               <div className="mt-4 rounded-lg bg-gray-50 p-6 text-sm text-gray-500 text-center">Loading category highlights...</div>
             ) : sliderSlides.length ? (
-              <section className="relative mt-4 overflow-hidden rounded-xl sm:rounded-2xl border border-gray-200 bg-white shadow-xl shadow-slate-200/30 transition-colors duration-300 dark:border-slate-700/50 dark:bg-slate-950 dark:shadow-black/10">
+              <section className="relative mt-4 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl shadow-slate-200/30 transition-colors duration-300 sm:rounded-2xl dark:border-slate-700/50 dark:bg-slate-950 dark:shadow-black/10">
                 <div
                   className="flex transition-transform duration-700 ease-out"
                   style={{ transform: `translateX(-${currentCategorySlideIndex * 100}%)` }}
@@ -471,7 +471,7 @@ function ProductsPageContent() {
                       className="relative min-h-[200px] sm:min-h-[280px] w-full shrink-0 overflow-hidden"
                     >
                       <Link href={slide.href} aria-label={`Open ${slide.title}`} className="absolute inset-0 z-10" />
-                      <div className="relative w-full overflow-hidden h-[220px] md:h-[350px] lg:h-[550px] bg-slate-100">
+                      <div className="relative h-[220px] w-full overflow-hidden bg-slate-100 md:h-[350px] lg:h-[550px]">
                         <picture>
                           <source
                             media="(max-width: 767px)"
@@ -575,7 +575,7 @@ function ProductsPageContent() {
               <div className="mt-4 rounded-lg bg-gray-50 p-6 text-sm text-gray-500 text-center">Loading products...</div>
             ) : products.length ? (
               /* Product Grid - Mobile First 2 Column Layout */
-              <div className="mt-4 product-grid-mobile">
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {products.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}

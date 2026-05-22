@@ -190,7 +190,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-16 sm:pb-12">
+    <main className="min-h-screen overflow-x-hidden bg-gray-100 pb-16 sm:pb-12">
       <section className="relative isolate overflow-hidden bg-linear-to-b from-slate-950 via-slate-950 to-black text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,205,96,0.16),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(255,229,168,0.06),transparent_20%),linear-gradient(180deg,rgba(15,23,42,0.8),rgba(8,11,18,0.96))]" />
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_24px,rgba(255,255,255,0.03)_25px),repeating-linear-gradient(90deg,transparent,transparent_24px,rgba(255,255,255,0.03)_25px)] opacity-10" />
@@ -254,8 +254,8 @@ export default function Home() {
       <section aria-labelledby="home-highlights-heading" className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p id="home-highlights-heading" className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-600">Curated picks</p>
-            <h2 className="mt-3 max-w-3xl text-3xl font-bold text-slate-950 md:text-4xl">Handpicked for you.</h2>
+            <h2 id="home-highlights-heading" className="text-sm font-semibold uppercase tracking-[0.28em] text-sky-600">Curated picks</h2>
+            <h3 className="mt-3 max-w-3xl text-3xl font-bold text-slate-950 md:text-4xl">Handpicked for you.</h3>
           </div>
           <div className="flex flex-wrap gap-2 text-sm text-gray-700">
             <span className="rounded-full bg-gray-100 px-3 py-2">Admin ads first</span>
@@ -264,7 +264,7 @@ export default function Home() {
         </div>
         {slidesCount ? (
           <div
-            className="relative overflow-hidden rounded-[26px] border border-gray-200 bg-white shadow-xl shadow-slate-200/30 transition-colors duration-300 dark:border-slate-700/50 dark:bg-slate-950 dark:shadow-black/10"
+            className="relative w-full overflow-hidden rounded-[26px] border border-gray-200 bg-white shadow-xl shadow-slate-200/30 transition-colors duration-300 dark:border-slate-700/50 dark:bg-slate-950 dark:shadow-black/10"
             aria-label="Homepage advertisements"
           >
             <div
@@ -284,7 +284,7 @@ export default function Home() {
                     aria-label={`Slide ${index + 1} of ${slidesCount}${slide.title ? `: ${slide.title}` : ""}`}
                     className="relative w-full shrink-0"
                   >
-                      <div className="relative w-full overflow-hidden rounded-2xl h-[220px] md:h-[350px] lg:h-[550px] bg-slate-100 dark:bg-slate-900">
+                      <div className="relative h-[220px] w-full overflow-hidden rounded-2xl bg-slate-100 md:h-[350px] lg:h-[550px] dark:bg-slate-900">
                         <picture>
                           <source media="(max-width: 767px)" srcSet={slide.mobileImage || slide.desktopImage} />
                           <source media="(max-width: 1023px)" srcSet={slide.tabletImage || slide.desktopImage} />
@@ -370,7 +370,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-5 md:px-8">
-        <div className="flex flex-wrap gap-3 overflow-x-auto pb-2">
+        <div className="flex flex-wrap gap-3 pb-2">
         {categories.length ? (
           categories.map((category) => (
             <Link
@@ -422,7 +422,7 @@ function ProductSection({ title, products, loading }: { title: string; products:
       {loading ? (
         <div className="rounded-md bg-white p-6 text-sm text-gray-500">Loading products...</div>
       ) : products.length ? (
-        <div className="product-grid-mobile">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product) => (
             <ProductCard key={product._id} product={product} compact />
           ))}

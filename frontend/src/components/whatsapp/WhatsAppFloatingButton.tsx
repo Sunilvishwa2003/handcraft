@@ -52,7 +52,7 @@ export default function WhatsAppFloatingButton() {
       whileTap={{ scale: 0.96 }}
       disabled={loading}
       aria-label="Open WhatsApp chat"
-      className="fixed bottom-5 left-4 z-[60] flex items-center gap-3 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-slate-950 shadow-[0_22px_48px_rgba(37,211,102,0.32)] ring-1 ring-white/50 transition disabled:cursor-not-allowed disabled:opacity-70 md:bottom-8 md:left-8"
+      className="fixed bottom-20 left-4 z-50 flex items-center gap-3 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-slate-950 shadow-[0_22px_48px_rgba(37,211,102,0.32)] ring-1 ring-white/50 transition disabled:cursor-not-allowed disabled:opacity-70 sm:bottom-6 sm:left-6 md:bottom-8 md:left-8"
     >
       <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-40 blur-md animate-[whatsapp-pulse_2.6s_ease-in-out_infinite]" />
       <span className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/90">

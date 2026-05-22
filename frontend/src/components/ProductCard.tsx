@@ -66,7 +66,7 @@ export default function ProductCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="mobile-card relative flex h-full min-w-0 flex-col border border-gray-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm transition-all hover:shadow-lg"
+      className="mobile-card relative flex h-full w-full min-w-0 flex-col border border-gray-200 bg-white p-2 sm:p-3 md:p-4 shadow-sm transition-all hover:shadow-lg"
     >
       {/* Wishlist Button */}
       <div className="absolute right-1.5 top-1.5 z-10 sm:right-3 sm:top-3">
@@ -84,7 +84,7 @@ export default function ProductCard({
             <img
               src={productImage}
               alt={product.name}
-              className="h-full w-full object-contain bg-slate-50 p-2 sm:p-3"
+              className="h-full w-full object-cover bg-slate-50"
               loading="lazy"
               decoding="async"
               onError={(event) => {

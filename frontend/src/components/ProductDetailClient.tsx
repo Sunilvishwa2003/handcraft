@@ -149,8 +149,8 @@ export default function ProductDetailClient({ productId }: { productId: string }
   const supports3D = Boolean(product.model3dUrl && isBackendAssetUrl(resolvedModelUrl));
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-12">
-      <div className="mx-auto max-w-7xl p-2 sm:p-3 md:p-6">
+    <main className="min-h-screen overflow-x-hidden bg-gray-100 pb-12">
+      <div className="mx-auto max-w-7xl px-4 py-3 md:px-8 md:py-6">
         {/* Breadcrumb */}
         <div className="mb-3">
           <p className="text-xs text-gray-500">
@@ -435,7 +435,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
         {/* Related Products */}
         <section className="mt-6">
           <h2 className="mb-3 text-xl font-bold text-gray-950">Customers also bought</h2>
-          <div className="product-grid-mobile">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {related.map((item) => <ProductCard key={item._id} product={item} compact />)}
           </div>
         </section>

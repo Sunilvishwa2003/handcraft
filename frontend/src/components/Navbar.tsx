@@ -326,7 +326,7 @@ export default function Navbar() {
         </div>
 
         {/* Category Navigation - Horizontal Scroll on Mobile */}
-        <div className="flex items-center gap-2 pb-2 pt-1 overflow-x-auto hide-scrollbar px-2">
+        <div className="flex flex-wrap items-center gap-2 px-2 pb-2 pt-1">
           {menuQuery.isLoading ? (
             [1, 2, 3, 4].map((index) => (
               <div key={index} className="h-8 min-w-[6rem] rounded-full bg-slate-200 animate-pulse" />

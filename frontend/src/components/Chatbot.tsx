@@ -54,7 +54,7 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div className="fixed bottom-20 right-4 z-50 sm:bottom-6 sm:right-5">
       {open ? (
         <section className="w-[min(360px,calc(100vw-32px))] rounded-md border border-gray-200 bg-white shadow-xl">
           <div className="flex items-center justify-between border-b border-gray-200 p-3">

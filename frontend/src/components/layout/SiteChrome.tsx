@@ -23,8 +23,8 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
       </div>
 
       <Navbar />
-      
-      <div className="flex-1">{children}</div>
+
+      <div className="flex-1 overflow-x-hidden pb-24 md:pb-0">{children}</div>
       
       <WhatsAppFloatingButton />
 

@@ -134,7 +134,7 @@ export default function CategoryChips({
   // Container classes
   const containerClasses = cn(
     "flex gap-2.5",
-    scrollable && "overflow-x-auto whitespace-nowrap pb-2 snap-x snap-mandatory scrollbar-hide -mx-1 px-1 sm:mx-0 sm:px-0",
+    scrollable && "max-w-full overflow-x-auto whitespace-nowrap pb-2 snap-x snap-mandatory scrollbar-hide",
     className
   );
 
@@ -290,7 +290,7 @@ export function CategoryChipsLight({
 
   const containerClasses = cn(
     "flex gap-2.5",
-    scrollable && "overflow-x-auto whitespace-nowrap pb-2 snap-x snap-mandatory scrollbar-hide -mx-1 px-1 sm:mx-0 sm:px-0",
+    scrollable && "max-w-full overflow-x-auto whitespace-nowrap pb-2 snap-x snap-mandatory scrollbar-hide",
     className
   );
 
