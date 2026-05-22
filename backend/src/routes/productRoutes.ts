@@ -640,12 +640,22 @@ router.post(
   admin,
   upload.array('assets', 10),
   asyncHandler(async (req, res) => {
-    // When multipart images are present, their Cloudinary secure URLs replace any stale /uploads local paths.
-    // This preserves the existing create-product response format while ensuring persistent CDN storage.
-    const uploadedImageUrls = await getUploadedImageUrls(req, `product-create:${String(req.body.name || 'unknown-product')}`);
-    const payload = normalizeProductPayload(req.body, uploadedImageUrls);
-    const product = await Product.create(payload);
-    res.status(201).json(product);
+    try {
+      // When multipart images are present, their Cloudinary secure URLs replace any stale /uploads local paths.
+      // This preserves the existing create-product response format while ensuring persistent CDN storage.
+      console.log('[product:create] incoming request headers:', Object.keys(req.headers));
+      console.log('[product:create] body keys:', Object.keys(req.body || {}));
+
+      const uploadedImageUrls = await getUploadedImageUrls(req, `product-create:${String(req.body.name || 'unknown-product')}`);
+      const payload = normalizeProductPayload(req.body, uploadedImageUrls);
+      const product = await Product.create(payload);
+      res.status(201).json(product);
+    } catch (err) {
+      // Log full error to assist debugging; rethrow to let asyncHandler/errorMiddleware serialize the message.
+      console.error('[product:create] ERROR while creating product:', err instanceof Error ? err.stack || err.message : err);
+      console.error('[product:create] request body snapshot:', JSON.stringify(req.body || {}).slice(0, 2000));
+      throw err;
+    }
   })
 );
 
