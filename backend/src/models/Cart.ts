@@ -8,6 +8,9 @@ export interface ICartItem {
   price: number;
   qty: number;
   countInStock: number;
+  useApproxPrice?: boolean;
+  approxPriceMin?: number;
+  approxPriceMax?: number;
 }
 
 export interface ICart extends Document {
@@ -26,10 +29,13 @@ const cartSchema = new Schema<ICart>(
       {
         product: { type: Schema.Types.ObjectId, required: true, ref: 'Product' },
         name: { type: String, required: true },
-        image: { type: String, default: PRODUCT_IMAGE_PLACEHOLDER, trim: true },
+            image: { type: String, default: PRODUCT_IMAGE_PLACEHOLDER, trim: true },
         price: { type: Number, required: true },
         qty: { type: Number, required: true, min: 1 },
         countInStock: { type: Number, required: true },
+        useApproxPrice: { type: Boolean, default: false },
+        approxPriceMin: { type: Number },
+        approxPriceMax: { type: Number },
       },
     ],
     couponCode: { type: String },

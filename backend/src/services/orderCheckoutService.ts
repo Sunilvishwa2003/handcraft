@@ -75,12 +75,22 @@ export const buildOrderItems = async (rawItems: RawOrderItem[]) => {
       throw new Error(`${product.name} has only ${product.countInStock} left in stock`);
     }
 
+    const useApproxPrice = Boolean(product.useApproxPrice);
+    const approxPriceMin = typeof product.approxPriceMin === 'number' ? product.approxPriceMin : undefined;
+    const approxPriceMax = typeof product.approxPriceMax === 'number' ? product.approxPriceMax : undefined;
+    const price = useApproxPrice && approxPriceMin !== undefined && approxPriceMax !== undefined && approxPriceMax >= approxPriceMin
+      ? Math.round((approxPriceMin + approxPriceMax) / 2)
+      : product.price;
+
     return {
       name: product.name,
       qty,
       image: getProductPrimaryImage(product),
-      price: product.price,
+      price,
       originalPrice: product.originalPrice,
+      useApproxPrice,
+      approxPriceMin,
+      approxPriceMax,
       product: product._id,
     };
   });

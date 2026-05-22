@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useEffectEvent, useState } from "react";
-import { apiFetch, formatPrice, getCartItemImageUrl, getGuestCart, getStoredUser, setGuestCart } from "@/lib/api";
+import { apiFetch, formatApproxPriceRange, formatPrice, getCartItemImageUrl, getGuestCart, getStoredUser, setGuestCart } from "@/lib/api";
 import { Cart } from "@/lib/types";
 
 export default function CartPage() {
@@ -161,7 +161,11 @@ export default function CartPage() {
                       >
                         {item.name}
                       </Link>
-                      <p className="mt-1 text-sm font-bold text-gray-950">{formatPrice(item.price)}</p>
+                      <p className="mt-1 text-sm font-bold text-gray-950">{
+                        item.useApproxPrice && item.approxPriceMin !== undefined && item.approxPriceMax !== undefined
+                          ? `${formatApproxPriceRange(item)} approx`
+                          : formatPrice(item.price)
+                      }</p>
                       
                       {/* Quantity Controls */}
                       <div className="mt-2 flex items-center gap-2">
@@ -191,7 +195,7 @@ export default function CartPage() {
 
                     {/* Line Total */}
                     <div className="text-right shrink-0">
-                      <p className="font-bold text-gray-950">{formatPrice(item.price * item.qty)}</p>
+                      <p className="font-bold text-gray-950">{formatPrice(item.price * item.qty)}{item.useApproxPrice ? " • approx" : ""}</p>
                     </div>
                   </article>
                 ))}

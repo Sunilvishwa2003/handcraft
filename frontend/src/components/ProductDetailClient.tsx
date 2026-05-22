@@ -10,7 +10,9 @@ import {
   addRecentlyViewed,
   apiFetch,
   buildCartItemFromProduct,
+  formatApproxPriceRange,
   formatPrice,
+  getCartItemImageUrl,
   getGuestCart,
   getProductImageAlt,
   getProductImageUrl,
@@ -18,6 +20,8 @@ import {
   isBackendAssetUrl,
   setBuyNowCart,
   setGuestCart,
+  getProductEstimatePrice,
+  isApproxPriceProduct,
 } from "@/lib/api";
 import { canCustomizeProduct, getProductCategoryName, getProductCategorySlug, isProductFullyCustomizable } from "@/lib/catalog";
 import { buildWhatsAppHref, getConfiguredWhatsAppPhoneNumber } from "@/lib/customization";
@@ -144,6 +148,8 @@ export default function ProductDetailClient({ productId }: { productId: string }
   }
 
   const showPrice = shouldShowPrice(product);
+  const isApproxPrice = isApproxPriceProduct(product);
+  const productPriceLabel = isApproxPrice ? `${formatApproxPriceRange(product)} approx` : formatPrice(getProductEstimatePrice(product));
   const canCustomize = canCustomizeProduct(product);
   const resolvedModelUrl = product.model3dUrl ? getProductImageUrl(product.model3dUrl) : "";
   const supports3D = Boolean(product.model3dUrl && isBackendAssetUrl(resolvedModelUrl));
@@ -279,11 +285,11 @@ export default function ProductDetailClient({ productId }: { productId: string }
             {/* Price */}
             {showPrice ? (
               <div className="mt-4 flex items-baseline gap-3">
-                <span className="text-3xl font-bold text-gray-950">{formatPrice(product.price)}</span>
-                {product.originalPrice && (
+                <span className="text-3xl font-bold text-gray-950">{productPriceLabel}</span>
+                {!isApproxPrice && product.originalPrice && (
                   <span className="text-lg text-gray-500 line-through">{formatPrice(product.originalPrice)}</span>
                 )}
-                {product.discountPercentage && (
+                {!isApproxPrice && product.discountPercentage && (
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-sm font-bold text-emerald-700">
                     {product.discountPercentage}% off
                   </span>

@@ -7,10 +7,13 @@ import WishlistButton from "@/components/WishlistButton";
 import {
   apiFetch,
   buildCartItemFromProduct,
+  formatApproxPriceRange,
   formatPrice,
   getGuestCart,
   getProductPrimaryImageUrl,
+  getProductEstimatePrice,
   getStoredUser,
+  isApproxPriceProduct,
   setGuestCart,
 } from "@/lib/api";
 import { getProductCategoryName, isProductFullyCustomizable } from "@/lib/catalog";
@@ -32,6 +35,8 @@ export default function ProductCard({
   onWishlistToggle?: (saved: boolean) => void;
 }) {
   const showPrice = shouldShowPrice(product);
+  const isApproxPrice = isApproxPriceProduct(product);
+  const productPriceLabel = isApproxPrice ? `${formatApproxPriceRange(product)} approx` : formatPrice(getProductEstimatePrice(product));
 
   const addToCart = async () => {
     const user = getStoredUser();
@@ -125,18 +130,22 @@ export default function ProductCard({
           {showPrice ? (
             <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
               <span className="text-sm font-bold text-gray-950 sm:text-lg">
-                {formatPrice(product.price)}
+                {productPriceLabel}
               </span>
-              {product.originalPrice && (
-                <span className="text-[10px] text-gray-500 line-through sm:text-xs">
-                  {formatPrice(product.originalPrice)}
-                </span>
+              {isApproxPrice ? (
+                <span className="text-[10px] font-semibold uppercase text-amber-700 sm:text-xs">Approx.</span>
+              ) : (
+                product.originalPrice && (
+                  <span className="text-[10px] text-gray-500 line-through sm:text-xs">
+                    {formatPrice(product.originalPrice)}
+                  </span>
+                )
               )}
-              {product.discountPercentage && (
+              {!isApproxPrice && product.discountPercentage ? (
                 <span className="text-[10px] font-semibold text-emerald-700 sm:text-xs">
                   {product.discountPercentage}% off
                 </span>
-              )}
+              ) : null}
             </div>
           ) : null}
 

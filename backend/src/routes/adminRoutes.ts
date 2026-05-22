@@ -75,6 +75,10 @@ const normalizeProductPayload = (input: Record<string, unknown>) => {
     vendorVerified: Boolean(input.vendorVerified),
     keywords: normalizeStringArray(input.keywords),
     shortDescription: input.shortDescription ? String(input.shortDescription).trim() : undefined,
+    pricingNoticeMessage: input.pricingNoticeMessage !== undefined ? String(input.pricingNoticeMessage || '').trim() : undefined,
+    useApproxPrice: Boolean(input.useApproxPrice),
+    approxPriceMin: input.useApproxPrice ? Number(input.approxPriceMin || 0) : undefined,
+    approxPriceMax: input.useApproxPrice ? Number(input.approxPriceMax || 0) : undefined,
     status: ['active', 'inactive', 'draft'].includes(String(input.status || '').trim().toLowerCase())
       ? (String(input.status).trim().toLowerCase() as 'active' | 'inactive' | 'draft')
       : 'draft',
@@ -136,6 +140,34 @@ router.get(
     const products = await Product.find().sort({ countInStock: 1 });
     const alerts = products.filter((product) => product.countInStock <= product.stockAlertThreshold);
     res.json({ products, alerts });
+  })
+);
+
+router.get(
+  '/env-check',
+  asyncHandler(async (_req, res) => {
+    const required = [
+      'MONGODB_URI',
+      'JWT_SECRET',
+      'CLOUDINARY_CLOUD_NAME',
+      'CLOUDINARY_API_KEY',
+      'CLOUDINARY_API_SECRET',
+      'CLIENT_URL',
+    ];
+
+    const result = required.map((key) => ({
+      key,
+      value: process.env[key] ? String(process.env[key]) : undefined,
+      present: Boolean(process.env[key]),
+    }));
+
+    res.json({
+      success: true,
+      requiredCount: required.length,
+      presentCount: result.filter((item) => item.present).length,
+      values: result.map((item) => ({ key: item.key, present: item.present })),
+      missing: result.filter((item) => !item.present).map((item) => item.key),
+    });
   })
 );
 

@@ -72,6 +72,9 @@ const formatAiResponse = async (message: string) => {
     name: p.name,
     image: getProductPrimaryImage(p),
     price: p.price,
+    useApproxPrice: p.useApproxPrice,
+    approxPriceMin: p.approxPriceMin,
+    approxPriceMax: p.approxPriceMax,
     shortDescription: (p.description || '').slice(0, 160),
     url: `/products/${p._id}`,
   }));

@@ -8,6 +8,9 @@ export interface IProduct extends Document {
   price: number;
   originalPrice?: number;
   discountPercentage: number;
+  useApproxPrice?: boolean;
+  approxPriceMin?: number;
+  approxPriceMax?: number;
   brand: string;
   category: string;
   subcategory?: string;
@@ -90,6 +93,9 @@ const productSchema = new Schema<IProduct>(
     price: { type: Number, required: true },
     originalPrice: { type: Number },
     discountPercentage: { type: Number, required: true, default: 0 },
+    useApproxPrice: { type: Boolean, default: false, index: true },
+    approxPriceMin: { type: Number },
+    approxPriceMax: { type: Number },
     brand: { type: String, required: true, default: 'Handcrafts' },
     category: { type: String, required: true },
     subcategory: { type: String },
@@ -145,8 +151,10 @@ productSchema.index({
 // Additional indexes for faster lookup
 productSchema.index({ name: 1 });
 productSchema.index({ category: 1 });
-productSchema.index({ tags: 1 });
-productSchema.index({ semanticKeywords: 1 });
+// `tags` and `semanticKeywords` are included in the text index above;
+// removing single-field indexes to avoid duplicate/overlapping indexes.
+// productSchema.index({ tags: 1 });
+// productSchema.index({ semanticKeywords: 1 });
 
 // Pre-save hook: normalize images array to objects { url, alt }
 productSchema.pre('save', function (this: any, next: any) {
@@ -170,6 +178,15 @@ productSchema.pre('save', function (this: any, next: any) {
 
   if (!this.shortDescription && this.description) {
     this.shortDescription = String(this.description).trim().slice(0, 180);
+  }
+
+  if (!this.useApproxPrice) {
+    this.approxPriceMin = undefined;
+    this.approxPriceMax = undefined;
+  } else if (typeof this.approxPriceMin === 'number' && typeof this.approxPriceMax === 'number') {
+    if (this.approxPriceMax < this.approxPriceMin) {
+      this.approxPriceMax = this.approxPriceMin;
+    }
   }
 
   next();

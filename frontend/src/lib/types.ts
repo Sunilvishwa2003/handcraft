@@ -13,6 +13,9 @@ export type Product = {
   price: number;
   originalPrice?: number;
   discountPercentage?: number;
+  useApproxPrice?: boolean;
+  approxPriceMin?: number;
+  approxPriceMax?: number;
   brand: string;
   category: string | ProductCategory;
   subcategory?: string;
@@ -231,6 +234,9 @@ export type CartItem = {
   price: number;
   qty: number;
   countInStock: number;
+  useApproxPrice?: boolean;
+  approxPriceMin?: number;
+  approxPriceMax?: number;
 };
 
 export type Cart = {

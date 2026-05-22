@@ -9,6 +9,9 @@ interface IOrderItem {
   image: string;
   price: number;
   originalPrice?: number;
+  useApproxPrice?: boolean;
+  approxPriceMin?: number;
+  approxPriceMax?: number;
   product: mongoose.Types.ObjectId | IProduct;
 }
 
@@ -67,6 +70,9 @@ const orderSchema = new Schema<IOrder>(
         image: { type: String, default: PRODUCT_IMAGE_PLACEHOLDER, trim: true },
         price: { type: Number, required: true },
         originalPrice: { type: Number },
+        useApproxPrice: { type: Boolean, default: false },
+        approxPriceMin: { type: Number },
+        approxPriceMax: { type: Number },
         product: { type: Schema.Types.ObjectId, required: true, ref: 'Product' },
       },
     ],

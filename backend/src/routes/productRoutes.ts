@@ -266,6 +266,16 @@ const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUr
     payload.pricingNoticeMessage = msg || undefined;
   }
 
+  if (input.useApproxPrice !== undefined) {
+    const useApproxPrice = parseBoolean(input.useApproxPrice);
+    const approxPriceMin = parseNumber(input.approxPriceMin, 0);
+    const approxPriceMax = parseNumber(input.approxPriceMax, 0);
+
+    payload.useApproxPrice = useApproxPrice;
+    payload.approxPriceMin = useApproxPrice ? approxPriceMin : undefined;
+    payload.approxPriceMax = useApproxPrice ? approxPriceMax : undefined;
+  }
+
   return payload;
 };
 
@@ -498,6 +508,9 @@ router.get(
         name: p.name,
         image: getProductPrimaryImage(p),
         price: p.price,
+        useApproxPrice: p.useApproxPrice,
+        approxPriceMin: p.approxPriceMin,
+        approxPriceMax: p.approxPriceMax,
         shortDescription: (p.description || '').slice(0, 200),
         url: `/products/${p._id}`,
       })),

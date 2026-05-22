@@ -165,6 +165,33 @@ export const formatPrice = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value || 0);
 
+export const isApproxPriceProduct = (product: Product | CartItem) =>
+  Boolean(
+    product.useApproxPrice &&
+      typeof product.approxPriceMin === "number" &&
+      typeof product.approxPriceMax === "number" &&
+      product.approxPriceMax >= product.approxPriceMin,
+  );
+
+export const formatApproxPriceRange = (product: Product | CartItem) => {
+  if (!isApproxPriceProduct(product)) {
+    return "";
+  }
+
+  const min = product.approxPriceMin ?? 0;
+  const max = product.approxPriceMax ?? 0;
+  if (min === max) {
+    return formatPrice(min);
+  }
+
+  return `${formatPrice(min)} - ${formatPrice(max)}`;
+};
+
+export const getProductEstimatePrice = (product: Product | CartItem) =>
+  isApproxPriceProduct(product)
+    ? Math.round(((product.approxPriceMin ?? 0) + (product.approxPriceMax ?? 0)) / 2)
+    : product.price;
+
 const RECENTLY_VIEWED_KEY = "recentlyViewedProducts";
 const STORED_USER_KEY = "commerceUser";
 export const WISHLIST_IDS_STORAGE_KEY = "commerceWishlistIds";
@@ -340,7 +367,10 @@ export const buildCartItemFromProduct = (product: Product, qty = 1): Cart["items
   product: product._id,
   name: product.name,
   image: getProductPrimaryImageUrl(product),
-  price: product.price,
+  price: getProductEstimatePrice(product),
   qty,
   countInStock: product.countInStock,
+  useApproxPrice: Boolean(product.useApproxPrice),
+  approxPriceMin: product.approxPriceMin,
+  approxPriceMax: product.approxPriceMax,
 });

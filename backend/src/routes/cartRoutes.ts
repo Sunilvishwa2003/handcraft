@@ -10,6 +10,13 @@ import { getProductPrimaryImage } from '../utils/productImage';
 
 const router = express.Router();
 
+const getCartItemPrice = (product: any) => {
+  if (product.useApproxPrice && typeof product.approxPriceMin === 'number' && typeof product.approxPriceMax === 'number' && product.approxPriceMax >= product.approxPriceMin) {
+    return Math.round((product.approxPriceMin + product.approxPriceMax) / 2);
+  }
+  return product.price;
+};
+
 const recalculateCart = async (cart: any) => {
   cart.subtotal = cart.items.reduce((sum: number, item: any) => sum + item.price * item.qty, 0);
   const itemCount = cart.items.reduce((sum: number, item: any) => sum + item.qty, 0);
@@ -65,19 +72,26 @@ router.put(
     }
 
     const existing = cart.items.find((item: any) => String(item.product) === String(product._id));
+    const cartPrice = getCartItemPrice(product);
     if (existing) {
       existing.qty = quantity;
-      existing.price = product.price;
+      existing.price = cartPrice;
       existing.image = getProductPrimaryImage(product);
       existing.countInStock = product.countInStock;
+      existing.useApproxPrice = Boolean(product.useApproxPrice);
+      existing.approxPriceMin = product.approxPriceMin;
+      existing.approxPriceMax = product.approxPriceMax;
     } else {
       cart.items.push({
         product: product._id,
         name: product.name,
         image: getProductPrimaryImage(product),
-        price: product.price,
+        price: cartPrice,
         qty: quantity,
         countInStock: product.countInStock,
+        useApproxPrice: Boolean(product.useApproxPrice),
+        approxPriceMin: product.approxPriceMin,
+        approxPriceMax: product.approxPriceMax,
       });
     }
 

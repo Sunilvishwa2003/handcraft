@@ -52,6 +52,9 @@ type ProductFormState = {
   description: string;
   price: string;
   originalPrice: string;
+  useApproxPrice: boolean;
+  approxPriceMin: string;
+  approxPriceMax: string;
   countInStock: string;
   stockAlertThreshold: string;
   availability: Product["availability"];
@@ -151,6 +154,9 @@ const createEmptyProductForm = (): ProductFormState => ({
   description: "",
   price: "999",
   originalPrice: "",
+  useApproxPrice: false,
+  approxPriceMin: "",
+  approxPriceMax: "",
   countInStock: "10",
   stockAlertThreshold: "5",
   availability: "in-stock",
@@ -253,6 +259,9 @@ const formFromProduct = (product: Product): ProductFormState => {
     description: product.description,
     price: String(product.price || ""),
     originalPrice: product.originalPrice ? String(product.originalPrice) : "",
+    useApproxPrice: Boolean(product.useApproxPrice),
+    approxPriceMin: product.approxPriceMin ? String(product.approxPriceMin) : "",
+    approxPriceMax: product.approxPriceMax ? String(product.approxPriceMax) : "",
     countInStock: String(product.countInStock || 0),
     stockAlertThreshold: String(product.stockAlertThreshold ?? 5),
     availability: product.availability,
@@ -291,6 +300,9 @@ const buildProductPayload = (form: ProductFormState) => {
     specs: toLineArray(form.specs),
     tags: toCsvArray(form.tags),
     semanticKeywords: toCsvArray(form.semanticKeywords),
+    useApproxPrice: Boolean(form.useApproxPrice),
+    approxPriceMin: form.useApproxPrice ? Number(form.approxPriceMin || 0) : undefined,
+    approxPriceMax: form.useApproxPrice ? Number(form.approxPriceMax || 0) : undefined,
     isCustomPricing: Boolean(form.isCustomPricing),
     pricingNoticeMessage: form.pricingNoticeMessage?.trim() || undefined,
   };
@@ -621,6 +633,24 @@ export default function AdminPage() {
     if (!payload.images.length) {
       setNotice({ tone: "error", text: "Add at least one product image." });
       return;
+    }
+
+    // Validation for approximate pricing
+    if (productForm.useApproxPrice) {
+      const min = Number(productForm.approxPriceMin || NaN);
+      const max = Number(productForm.approxPriceMax || NaN);
+      if (Number.isNaN(min) || Number.isNaN(max)) {
+        setNotice({ tone: "error", text: "Approx min and max must be valid numbers." });
+        return;
+      }
+      if (min <= 0 || max <= 0) {
+        setNotice({ tone: "error", text: "Approximate prices must be greater than zero." });
+        return;
+      }
+      if (max < min) {
+        setNotice({ tone: "error", text: "Approx max must be greater than or equal to approx min." });
+        return;
+      }
     }
 
     setSavingProduct(true);
@@ -1376,6 +1406,35 @@ const saveAd = async (event: FormEvent) => {
                     Mark as custom-priced (show pricing notice)
                   </label>
 
+                  <label className="mt-3 flex items-center gap-2 rounded-md bg-gray-50 px-3 py-3 text-sm font-semibold text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={productForm.useApproxPrice}
+                      onChange={(event) => setProductForm((current) => ({ ...current, useApproxPrice: event.target.checked }))}
+                      className="h-4 w-4"
+                    />
+                    Use approximate price range (stone products)
+                  </label>
+
+                  {productForm.useApproxPrice ? (
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        value={productForm.approxPriceMin}
+                        onChange={(e) => setProductForm((c) => ({ ...c, approxPriceMin: e.target.value }))}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                        placeholder="Approx min"
+                      />
+                      <input
+                        type="number"
+                        value={productForm.approxPriceMax}
+                        onChange={(e) => setProductForm((c) => ({ ...c, approxPriceMax: e.target.value }))}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                        placeholder="Approx max"
+                      />
+                    </div>
+                  ) : null}
+
                   <Label title="Pricing notice (optional)">
                     <textarea
                       value={productForm.pricingNoticeMessage}
@@ -1409,7 +1468,11 @@ const saveAd = async (event: FormEvent) => {
                       <p className="text-sm font-semibold text-gray-900">{productForm.brand || "Brand"}</p>
                     </div>
                     <p className="text-sm text-gray-500">{productForm.category || "Category"}</p>
-                    <p className="mt-1 text-sm font-bold text-gray-950">{formatPrice(Number(productForm.price || 0))}</p>
+                    <p className="mt-1 text-sm font-bold text-gray-950">{
+                      productForm.useApproxPrice && productForm.approxPriceMin && productForm.approxPriceMax
+                        ? `${formatPrice(Number(productForm.approxPriceMin))} - ${formatPrice(Number(productForm.approxPriceMax))} approx`
+                        : formatPrice(Number(productForm.price || 0))
+                    }</p>
                     <p className="text-xs text-gray-500">
                       Stock {productForm.countInStock || 0} · {productForm.availability}
                       {productForm.featured ? " · featured" : ""}
