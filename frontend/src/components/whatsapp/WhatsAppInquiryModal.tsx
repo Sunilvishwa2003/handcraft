@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "@/lib/api";
-import { buildWhatsAppHref, inquiryTypeOptions } from "@/lib/customization";
+import { buildWhatsAppHref, getConfiguredWhatsAppPhoneNumber, inquiryTypeOptions } from "@/lib/customization";
 import { CustomProjectInquiryType, CustomizationSelection, Product, WhatsAppInquiryPreview } from "@/lib/types";
 
 type WhatsAppInquiryModalProps = {
@@ -48,7 +48,7 @@ export default function WhatsAppInquiryModal({
         }),
       });
 
-      const phoneNumber = preview.phoneNumber || process.env.WHATSAPP_PHONE_NUMBER || "";
+      const phoneNumber = getConfiguredWhatsAppPhoneNumber(preview.phoneNumber);
       if (!phoneNumber) {
         setMessage("Add a WhatsApp phone number in the environment to enable artisan chat.");
         return;

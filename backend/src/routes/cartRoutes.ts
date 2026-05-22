@@ -12,7 +12,8 @@ const router = express.Router();
 
 const recalculateCart = async (cart: any) => {
   cart.subtotal = cart.items.reduce((sum: number, item: any) => sum + item.price * item.qty, 0);
-  const totals = await calculateOrderTotals(cart.subtotal, cart.couponCode);
+  const itemCount = cart.items.reduce((sum: number, item: any) => sum + item.qty, 0);
+  const totals = await calculateOrderTotals(cart.subtotal, cart.couponCode, 'standard', itemCount);
   cart.discountAmount = totals.discountPrice;
   cart.total = totals.totalPrice;
   if (!totals.coupon && cart.couponCode) {

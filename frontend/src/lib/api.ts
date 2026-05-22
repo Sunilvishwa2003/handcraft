@@ -4,6 +4,7 @@ import { normalizeUserAdminState } from "./isAdmin";
 const DEFAULT_BACKEND_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT || "5001";
 const DEFAULT_API_PATH = "/api";
 export const PRODUCT_IMAGE_PLACEHOLDER = "/mahabs-logo.svg";
+const SHIPPING_PRICE_PER_PRODUCT = 49;
 
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i;
 const WINDOWS_UPLOAD_PATH_PATTERN = /\/uploads\/.+$/i;
@@ -279,8 +280,9 @@ export const getGuestCart = (): Cart => {
     const raw = window.localStorage.getItem("guestCart");
     const items = raw ? (JSON.parse(raw) as Cart["items"]) : [];
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+    const shippingPrice = items.reduce((sum, item) => sum + item.qty, 0) * SHIPPING_PRICE_PER_PRODUCT;
 
-    return { items, subtotal, discountAmount: 0, total: subtotal };
+    return { items, subtotal, discountAmount: 0, total: subtotal + shippingPrice };
   } catch {
     window.localStorage.removeItem("guestCart");
     return { items: [], subtotal: 0, discountAmount: 0, total: 0 };
@@ -308,7 +310,8 @@ export const getBuyNowCart = (): Cart | null => {
 
     const items = JSON.parse(raw) as Cart["items"];
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-    return { items, subtotal, discountAmount: 0, total: subtotal };
+    const shippingPrice = items.reduce((sum, item) => sum + item.qty, 0) * SHIPPING_PRICE_PER_PRODUCT;
+    return { items, subtotal, discountAmount: 0, total: subtotal + shippingPrice };
   } catch {
     window.localStorage.removeItem(BUY_NOW_CART_KEY);
     return null;

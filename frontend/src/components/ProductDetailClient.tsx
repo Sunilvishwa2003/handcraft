@@ -20,7 +20,7 @@ import {
   setGuestCart,
 } from "@/lib/api";
 import { canCustomizeProduct, getProductCategoryName, getProductCategorySlug, isProductFullyCustomizable } from "@/lib/catalog";
-import { buildWhatsAppHref } from "@/lib/customization";
+import { buildWhatsAppHref, getConfiguredWhatsAppPhoneNumber } from "@/lib/customization";
 import StonePricingNotice from "@/components/product/StonePricingNotice";
 import { Cart, Product, Review, WhatsAppInquiryPreview } from "@/lib/types";
 import { MessageCircle } from "lucide-react";
@@ -123,7 +123,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
         }),
       });
 
-      const phoneNumber = preview.phoneNumber?.trim();
+      const phoneNumber = getConfiguredWhatsAppPhoneNumber(preview.phoneNumber);
       if (!phoneNumber) {
         throw new Error("WhatsApp contact is unavailable right now.");
       }

@@ -142,3 +142,6 @@ export const buildWhatsAppHref = (phoneNumber: string, message: string) => {
   const sanitizedNumber = phoneNumber.replace(/[^\d]/g, "");
   return `https://wa.me/${sanitizedNumber}?text=${encodedMessage}`;
 };
+
+export const getConfiguredWhatsAppPhoneNumber = (phoneNumber?: string | null) =>
+  phoneNumber?.trim() || process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER?.trim() || "";

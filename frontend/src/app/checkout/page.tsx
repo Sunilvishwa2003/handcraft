@@ -467,9 +467,9 @@ function CheckoutPageContent() {
                     }}
                     className={selectClassName}
                   >
-                    <option value="standard">Standard (Free over ₹1500)</option>
-                    <option value="express">Express - ₹99</option>
-                    <option value="priority">Priority - ₹149</option>
+                    <option value="standard">Standard - ₹49 per product</option>
+                    <option value="express">Express - ₹49 per product</option>
+                    <option value="priority">Priority - ₹49 per product</option>
                   </select>
                 </div>
 
@@ -588,12 +588,10 @@ function CheckoutPageContent() {
                 <span className="text-gray-600">Discount</span>
                 <span className="text-emerald-600">-{formatPrice(summary?.discountPrice || 0)}</span>
               </div>
-              {(summary?.taxPrice ?? 0) > 0 ? (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-900">{formatPrice(summary?.taxPrice || 0)}</span>
-                </div>
-              ) : null}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Tax</span>
+                <span className="text-gray-900">{formatPrice(summary?.taxPrice || 0)}</span>
+              </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span className="text-gray-900">{formatPrice(summary?.shippingPrice || 0)}</span>

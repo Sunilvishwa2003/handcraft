@@ -324,7 +324,7 @@ export default function OrderTrackingClient({ orderId }: { orderId: string }) {
                 <SummaryRow label="Items" value={String(itemCount)} />
                 <SummaryRow label="Subtotal" value={formatPrice(order.totalPrice - order.shippingPrice - order.taxPrice + order.discountPrice)} />
                 <SummaryRow label="Shipping" value={formatPrice(order.shippingPrice)} />
-                {order.taxPrice > 0 ? <SummaryRow label="Tax" value={formatPrice(order.taxPrice)} /> : null}
+                <SummaryRow label="Tax" value={formatPrice(order.taxPrice)} />
                 <SummaryRow label="Discount" value={order.discountPrice ? `- ${formatPrice(order.discountPrice)}` : formatPrice(0)} />
                 <SummaryRow label="Total" value={formatPrice(order.totalPrice)} emphasized />
               </div>

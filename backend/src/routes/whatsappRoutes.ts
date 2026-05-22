@@ -13,6 +13,8 @@ const inquiryTypeLabels: Record<string, string> = {
 };
 
 const sanitize = (value: unknown) => String(value || '').trim();
+const getConfiguredWhatsAppPhoneNumber = () =>
+  sanitize(process.env.WHATSAPP_PHONE_NUMBER || process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER || '');
 
 router.post(
   '/inquiry-preview',
@@ -72,7 +74,7 @@ router.post(
     res.json({
       inquiryType,
       message: lines.join('\n'),
-      phoneNumber: sanitize(process.env.WHATSAPP_PHONE_NUMBER || ''),
+      phoneNumber: getConfiguredWhatsAppPhoneNumber(),
     });
   })
 );

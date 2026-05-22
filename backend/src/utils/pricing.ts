@@ -46,13 +46,14 @@ export const shippingLabels: Record<ShippingOption, string> = {
 export const calculateOrderTotals = async (
   subtotal: number,
   couponCode?: string,
-  shippingOption: ShippingOption = 'standard'
+  shippingOption: ShippingOption = 'standard',
+  itemCount = 0,
 ) => {
   const coupon = await findValidCoupon(couponCode);
   const discountPrice = getCouponDiscount(subtotal, coupon);
   const netSubtotal = subtotal - discountPrice;
-  const taxPrice = roundMoney(netSubtotal * 0.05);
-  const shippingPrice = shippingOption === 'standard' ? (netSubtotal > 1499 ? 0 : shippingRates.standard) : shippingRates[shippingOption];
+  const taxPrice = 0;
+  const shippingPrice = roundMoney(Math.max(itemCount, 0) * shippingRates.standard);
   const totalPrice = roundMoney(netSubtotal + taxPrice + shippingPrice);
 
   return {

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
-import { buildWhatsAppHref } from "@/lib/customization";
+import { buildWhatsAppHref, getConfiguredWhatsAppPhoneNumber } from "@/lib/customization";
 import { WhatsAppInquiryPreview } from "@/lib/types";
 
 const FALLBACK_WHATSAPP_MESSAGE = "Hello, I want to discuss a handcrafted customization request.";
@@ -28,8 +28,7 @@ export default function WhatsAppFloatingButton() {
         }),
       });
 
-      const phoneNumber =
-        preview.phoneNumber?.trim() || process.env.NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER?.trim() || "";
+      const phoneNumber = getConfiguredWhatsAppPhoneNumber(preview.phoneNumber);
 
       if (!phoneNumber) {
         throw new Error("WhatsApp contact is unavailable right now.");

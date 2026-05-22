@@ -105,12 +105,13 @@ export const prepareCheckoutDetails = async ({
 
   const orderItems = await buildOrderItems(rawItems);
   const subtotal = roundMoney(orderItems.reduce((sum, item) => sum + item.price * item.qty, 0));
+  const itemCount = orderItems.reduce((sum, item) => sum + item.qty, 0);
   const resolvedShippingOption = resolveShippingOption(shippingOption);
-  const totals = await calculateOrderTotals(subtotal, couponCode, resolvedShippingOption);
+  const totals = await calculateOrderTotals(subtotal, couponCode, resolvedShippingOption, itemCount);
   const fraud = await detectFraud({
     userId: userId || 'undefined',
     totalPrice: totals.totalPrice,
-    itemCount: orderItems.reduce((sum, item) => sum + item.qty, 0),
+    itemCount,
     paymentMethod,
   });
 

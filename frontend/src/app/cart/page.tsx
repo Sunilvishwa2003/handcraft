@@ -111,10 +111,9 @@ export default function CartPage() {
       return;
     }
 
-    const zone = pincode.trim()[0];
-    const shippingCharge = zone === "5" ? 40 : zone === "6" ? 50 : 60;
-    const deliveryWindow = zone === "5" || zone === "6" ? "2-4 business days" : "4-6 business days";
-    setShippingEstimate(`Estimated shipping: ₹${shippingCharge} • ${deliveryWindow}`);
+    const itemCount = cart.items.reduce((sum, item) => sum + item.qty, 0);
+    const deliveryWindow = "2-4 business days";
+    setShippingEstimate(`Estimated shipping: ₹${itemCount * 49} • ${deliveryWindow}`);
   };
 
   return (

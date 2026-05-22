@@ -13,6 +13,10 @@ type Dashboard = {
   recentOrders: Order[];
 };
 
+type AdminProduct = Omit<Product, "images"> & {
+  images: string[];
+};
+
 type UploadAsset = {
   originalName: string;
   url: string;
@@ -233,13 +237,10 @@ const getNormalizedAdminProductImages = (product?: Pick<Product, "images" | "ima
   return Array.from(new Set(legacyFallbacks));
 };
 
-const normalizeAdminProduct = (product: Product): Product => ({
+const normalizeAdminProduct = (product: Product): AdminProduct => ({
   ...product,
   images: getNormalizedAdminProductImages(product),
 });
-
-const getAdminProductImage = (product?: Pick<Product, "images" | "image" | "thumbnail" | "imageUrl"> | null) =>
-  getNormalizedAdminProductImages(product)[0] || PRODUCT_IMAGE_PLACEHOLDER;
 
 const formFromProduct = (product: Product): ProductFormState => {
   const images = getNormalizedAdminProductImages(product);
@@ -328,7 +329,7 @@ const noticeStyles: Record<Notice["tone"], string> = {
 
 export default function AdminPage() {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [customProjects, setCustomProjects] = useState<CustomProject[]>([]);
   const [ads, setAds] = useState<Ad[]>([]);
@@ -1389,11 +1390,11 @@ const saveAd = async (event: FormEvent) => {
               <div className="mt-5 rounded-md border border-gray-200 bg-gray-50 p-4">
                 <p className="text-sm font-semibold text-gray-900">Preview</p>
                 <div className="mt-3 grid grid-cols-[72px_1fr] gap-3">
-                  <div className="flex h-18 w-18 items-center justify-center rounded-md bg-white">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-md bg-white">
                     <img
-                      src={resolveAssetUrl(productForm.images[0] || "") || PRODUCT_IMAGE_PLACEHOLDER}
+                      src={productForm.images?.[0] || PRODUCT_IMAGE_PLACEHOLDER}
                       alt={productForm.name || "Preview"}
-                      className="h-full w-full rounded-md object-cover"
+                      className="h-16 w-16 rounded object-cover"
                       onError={(event) => {
                         event.currentTarget.onerror = null;
                         event.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
@@ -1496,11 +1497,11 @@ const saveAd = async (event: FormEvent) => {
                 <div className="mt-4 max-h-[860px] overflow-auto">
                   {filteredProducts.map((product) => (
                     <div key={product._id} className="grid gap-3 border-b border-gray-200 py-4 md:grid-cols-[72px_1fr_auto] md:items-center">
-                      <div className="flex h-18 w-18 items-center justify-center rounded-md bg-gray-50">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-50">
                         <img
-                          src={getAdminProductImage(product)}
+                          src={product.images?.[0] || PRODUCT_IMAGE_PLACEHOLDER}
                           alt={product.name}
-                          className="h-full w-full rounded-md object-cover"
+                          className="h-16 w-16 rounded object-cover"
                           onError={(event) => {
                             event.currentTarget.onerror = null;
                             event.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
