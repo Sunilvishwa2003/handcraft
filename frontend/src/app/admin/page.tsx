@@ -94,12 +94,7 @@ type CategoryGroup = {
 const categories = [
   { name: "Stone", slug: "stone" },
   { name: "Stone Name Board", slug: "stone-name-board" },
-  { name: "Metal", slug: "metal" },
-  { name: "Wood", slug: "wood" },
   { name: "Home Decor", slug: "home-decor" },
-  { name: "Statues", slug: "statues" },
-  { name: "Pooja Items", slug: "pooja-items" },
-  { name: "Garden Decor", slug: "garden-decor" },
 ];
 const brandSuggestions = ["Handcrafts", "Heritage Glow", "Clay Studio", "Woven Nest", "Temple Light", "MahabsCrafto"];
 const brandLogos: Record<string, { initials: string; bg: string; fg: string }> = {
@@ -407,7 +402,13 @@ export default function AdminPage() {
     setOrders(orderList);
     setCustomProjects(customProjectList);
     setAds(adList);
-    setCategoryGroups(groupedProducts);
+    setCategoryGroups(
+      groupedProducts.filter((group) =>
+        categories.some(
+          (category) => category.name === group.category || category.slug === group.category,
+        ),
+      ),
+    );
 
     if (
       dashboardResult.status === "rejected" ||
@@ -1239,7 +1240,7 @@ const saveAd = async (event: FormEvent) => {
                         value={productForm.brand}
                         list="brand-options"
                         onChange={(event) => setProductForm((current) => ({ ...current, brand: event.target.value }))}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                         placeholder="Enter or select a brand"
                       />
                     </div>
@@ -1248,7 +1249,7 @@ const saveAd = async (event: FormEvent) => {
                     <select
                       value={productForm.category}
                       onChange={(event) => setProductForm((current) => ({ ...current, category: event.target.value }))}
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-sky-500"
+                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                     >
                       <option value="" disabled>
                         Select a category
@@ -1273,7 +1274,7 @@ const saveAd = async (event: FormEvent) => {
                   <textarea
                     value={productForm.description}
                     onChange={(event) => setProductForm((current) => ({ ...current, description: event.target.value }))}
-                    className="min-h-28 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                    className="min-h-28 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                     placeholder="Describe the material, craftsmanship, dimensions, and use case."
                   />
                 </Label>
@@ -1303,7 +1304,7 @@ const saveAd = async (event: FormEvent) => {
                     <select
                       value={productForm.availability}
                       onChange={(event) => setProductForm((current) => ({ ...current, availability: event.target.value as Product["availability"] }))}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                     >
                       <option value="in-stock">In stock</option>
                       <option value="out-of-stock">Out of stock</option>
@@ -1329,7 +1330,7 @@ const saveAd = async (event: FormEvent) => {
                         <input
                           value={image}
                           onChange={(event) => setImageAt(index, event.target.value)}
-                          className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                          className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                           placeholder={index === 0 ? "Primary image URL" : "Additional image URL"}
                         />
                         <label className={`flex cursor-pointer items-center justify-center rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 ${uploadBusy ? "opacity-60" : "hover:bg-gray-50"}`}>
@@ -1391,7 +1392,7 @@ const saveAd = async (event: FormEvent) => {
                   <textarea
                     value={productForm.specs}
                     onChange={(event) => setProductForm((current) => ({ ...current, specs: event.target.value }))}
-                    className="min-h-24 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                    className="min-h-24 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                     placeholder={`Handwoven bamboo\nDurable lacquer finish\nIdeal for gifting`}
                   />
                 </Label>
@@ -1436,14 +1437,14 @@ const saveAd = async (event: FormEvent) => {
                         type="number"
                         value={productForm.approxPriceMin}
                         onChange={(e) => setProductForm((c) => ({ ...c, approxPriceMin: e.target.value }))}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                         placeholder="Approx min"
                       />
                       <input
                         type="number"
                         value={productForm.approxPriceMax}
                         onChange={(e) => setProductForm((c) => ({ ...c, approxPriceMax: e.target.value }))}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                         placeholder="Approx max"
                       />
                     </div>
@@ -1453,7 +1454,7 @@ const saveAd = async (event: FormEvent) => {
                     <textarea
                       value={productForm.pricingNoticeMessage}
                       onChange={(event) => setProductForm((current) => ({ ...current, pricingNoticeMessage: event.target.value }))}
-                      className="min-h-20 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                      className="min-h-20 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                       placeholder="Optional notice shown on product pages for custom-priced or stone items."
                     />
                   </Label>
@@ -1533,7 +1534,7 @@ const saveAd = async (event: FormEvent) => {
                   <textarea
                     value={importText}
                     onChange={(event) => setImportText(event.target.value)}
-                    className="mt-4 min-h-64 w-full rounded-md border border-gray-300 bg-white px-3 py-3 font-mono text-xs outline-none focus:border-sky-500"
+                    className="mt-4 min-h-64 w-full rounded-md border border-gray-300 bg-white px-3 py-3 font-mono text-xs text-slate-950 outline-none focus:border-sky-500"
                   />
                   {importSummary ? (
                     <div className="mt-4 rounded-md bg-white p-4 text-sm">
@@ -1567,7 +1568,7 @@ const saveAd = async (event: FormEvent) => {
                     value={productQuery}
                     onChange={(event) => setProductQuery(event.target.value)}
                     placeholder="Search products, brand, category, tag"
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                    className="rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                   />
                 </div>
 
@@ -1629,7 +1630,7 @@ const saveAd = async (event: FormEvent) => {
                   value={projectQuery}
                   onChange={(event) => setProjectQuery(event.target.value)}
                   placeholder="Search customer, material, product, stage"
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                  className="rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                 />
               </div>
 
@@ -1709,7 +1710,7 @@ const saveAd = async (event: FormEvent) => {
                               value={project.stage}
                               disabled={updatingProjectId === project._id}
                               onChange={(event) => void updateCustomProjectStage(project._id, event.target.value as CustomProjectStage)}
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+                              className="rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950"
                             >
                               {customProjectStages.map((stage) => (
                                 <option key={stage} value={stage}>
@@ -1777,7 +1778,7 @@ const saveAd = async (event: FormEvent) => {
                 <textarea
                   value={adForm.description}
                   onChange={(event) => setAdForm((current) => ({ ...current, description: event.target.value }))}
-                  className="min-h-24 w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                  className="min-h-24 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                   placeholder="Describe the promotion or leave it empty for an image-only banner."
                 />
               </Label>
@@ -1790,7 +1791,7 @@ const saveAd = async (event: FormEvent) => {
                         value={adForm.imageUrl}
                         onChange={(event) => setAdForm((current) => ({ ...current, imageUrl: event.target.value }))}
                         placeholder="/uploads/ad-banner.jpg"
-                        className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                        className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                       />
                       <div className="flex items-center gap-2">
                         <label className={`relative inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 ${uploadBusy ? "opacity-60" : "hover:bg-gray-50"}`}>
@@ -1836,7 +1837,7 @@ const saveAd = async (event: FormEvent) => {
                             value={adForm.desktopImage}
                             onChange={(event) => setAdForm((current) => ({ ...current, desktopImage: event.target.value }))}
                             placeholder="/uploads/ad-banner-desktop.jpg"
-                            className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                            className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                           />
                           <label className={`relative inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 ${uploadBusy ? "opacity-60" : "hover:bg-gray-50"}`}>
                             {uploadBusy ? "Uploading..." : "Upload"}
@@ -1866,7 +1867,7 @@ const saveAd = async (event: FormEvent) => {
                             value={adForm.tabletImage}
                             onChange={(event) => setAdForm((current) => ({ ...current, tabletImage: event.target.value }))}
                             placeholder="/uploads/ad-banner-tablet.jpg"
-                            className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                            className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                           />
                           <label className={`relative inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 ${uploadBusy ? "opacity-60" : "hover:bg-gray-50"}`}>
                             {uploadBusy ? "Uploading..." : "Upload"}
@@ -1896,7 +1897,7 @@ const saveAd = async (event: FormEvent) => {
                             value={adForm.mobileImage}
                             onChange={(event) => setAdForm((current) => ({ ...current, mobileImage: event.target.value }))}
                             placeholder="/uploads/ad-banner-mobile.jpg"
-                            className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                            className="min-w-0 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
                           />
                           <label className={`relative inline-flex h-10 cursor-pointer items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 ${uploadBusy ? "opacity-60" : "hover:bg-gray-50"}`}>
                             {uploadBusy ? "Uploading..." : "Upload"}
@@ -2036,7 +2037,7 @@ const saveAd = async (event: FormEvent) => {
                 value={orderQuery}
                 onChange={(event) => setOrderQuery(event.target.value)}
                 placeholder="Search order, customer, product, payment"
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-sky-500"
+                className="rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950 outline-none focus:border-sky-500"
               />
             </div>
             <div className="mt-4 grid gap-3">
@@ -2051,7 +2052,7 @@ const saveAd = async (event: FormEvent) => {
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-cyan-700">{order.status}</p>
-                  <select value={order.status} onChange={(event) => void updateStatus(order._id, event.target.value)} className="rounded-md border border-gray-300 px-3 py-2 text-sm">
+                  <select value={order.status} onChange={(event) => void updateStatus(order._id, event.target.value)} className="rounded-md border border-gray-300 px-3 py-2 text-sm text-slate-950">
                     {["placed", "confirmed", "packed", "shipped", "out-for-delivery", "delivered", "cancelled"].map((status) => (
                       <option key={status} value={status}>
                         {status}

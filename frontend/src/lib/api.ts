@@ -200,6 +200,23 @@ export const getProductEstimatePrice = (product: Product | CartItem) =>
     ? Math.round(((product.approxPriceMin ?? 0) + (product.approxPriceMax ?? 0)) / 2)
     : product.price;
 
+export const getCartItemPriceLabel = (item: CartItem) => {
+  if (item.useApproxPrice && item.approxPriceMin !== undefined && item.approxPriceMax !== undefined) {
+    return `${formatApproxPriceRange(item)} approx`;
+  }
+
+  return item.price > 0 ? formatPrice(item.price) : "";
+};
+
+export const getCartItemLineTotalLabel = (item: CartItem) => {
+  if (item.useApproxPrice && item.approxPriceMin !== undefined && item.approxPriceMax !== undefined) {
+    return `${formatApproxPriceRange(item)} approx`;
+  }
+
+  const total = item.price * item.qty;
+  return total > 0 ? formatPrice(total) : "";
+};
+
 const RECENTLY_VIEWED_KEY = "recentlyViewedProducts";
 const STORED_USER_KEY = "commerceUser";
 export const WISHLIST_IDS_STORAGE_KEY = "commerceWishlistIds";

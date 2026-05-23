@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, ReactNode, useMemo, useRef, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import { customProjectStageLabels } from "@/lib/customization";
-import { formatPrice, resolveAssetUrl } from "@/lib/api";
+import { formatPrice, getCartItemLineTotalLabel, resolveAssetUrl } from "@/lib/api";
 import { Address, AddressInput, CustomProject, NotificationItem, Order, Product, UserProfile } from "@/lib/types";
 
 type AsyncStateProps = {
@@ -497,7 +497,7 @@ export function OrdersSection({ orders, loading, error, onRetry }: OrdersSection
                                 <p className="truncate font-semibold text-slate-900">{item.name}</p>
                                 <p className="mt-1 text-sm text-slate-500">Qty {item.qty}</p>
                               </div>
-                              <p className="text-sm font-semibold text-slate-900">{formatPrice(item.price * item.qty)}</p>
+                              <p className="text-sm font-semibold text-slate-900">{getCartItemLineTotalLabel(item)}</p>
                             </div>
                           ))}
                           {order.orderItems.length > 3 ? <p className="text-sm text-slate-500">+ {order.orderItems.length - 3} more item(s) in this order</p> : null}

@@ -8,6 +8,7 @@ import {
   formatPrice,
   getBuyNowCart,
   getCartItemImageUrl,
+  getCartItemLineTotalLabel,
   getGuestCart,
   getStoredUser,
   setBuyNowCart,
@@ -468,8 +469,8 @@ function CheckoutPageContent() {
                     className={selectClassName}
                   >
                     <option value="standard">Standard - ₹49 per product</option>
-                    <option value="express">Express - ₹49 per product</option>
-                    <option value="priority">Priority - ₹49 per product</option>
+                    <option value="express">Express - ₹99 per product</option>
+                    <option value="priority">Priority - ₹149 per product</option>
                   </select>
                 </div>
 
@@ -482,32 +483,25 @@ function CheckoutPageContent() {
                     className={selectClassName}
                   >
                     <option value="razorpay">Razorpay (UPI, Cards, Net Banking)</option>
-                    <option value="cod">Cash on Delivery</option>
                   </select>
                 </div>
               </div>
 
               {/* Payment Info */}
-              {form.paymentMethod === "razorpay" ? (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">Secure Payment</p>
-                  <h2 className="mt-1 text-base font-semibold text-slate-950">Pay with Razorpay</h2>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    UPI, credit/debit cards, net banking, and wallets supported.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {razorpayBenefits.map((benefit) => (
-                      <span key={benefit} className="rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
-                        {benefit}
-                      </span>
-                    ))}
-                  </div>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700">Secure Payment</p>
+                <h2 className="mt-1 text-base font-semibold text-slate-950">Pay with Razorpay</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  UPI, credit/debit cards, net banking, and wallets supported.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {razorpayBenefits.map((benefit) => (
+                    <span key={benefit} className="rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-emerald-700">
+                      {benefit}
+                    </span>
+                  ))}
                 </div>
-              ) : (
-                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
-                  Pay when your order arrives.
-                </div>
-              )}
+              </div>
 
               {/* Submit Button */}
               <button
@@ -515,12 +509,8 @@ function CheckoutPageContent() {
                 className="w-full rounded-lg bg-sky-400 px-4 py-3 font-bold text-gray-950 transition-colors hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isProcessing
-                  ? form.paymentMethod === "razorpay"
-                    ? "Opening Razorpay..."
-                    : "Placing order..."
-                  : form.paymentMethod === "razorpay"
-                    ? "Proceed to Payment"
-                    : "Place COD Order"}
+                  ? "Opening Razorpay..."
+                  : "Proceed to Payment"}
               </button>
             </form>
             )}
@@ -573,7 +563,7 @@ function CheckoutPageContent() {
                       </button>
                     </div>
                   </div>
-                  <span className="shrink-0 text-sm font-medium text-gray-900">{formatPrice(item.price * item.qty)}</span>
+                  <span className="shrink-0 text-sm font-medium text-gray-900">{getCartItemLineTotalLabel(item)}</span>
                 </div>
               ))}
             </div>

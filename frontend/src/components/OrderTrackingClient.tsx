@@ -5,7 +5,7 @@ import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { useStoredUser } from "@/hooks/useStoredUser";
-import { apiFetch, formatPrice, getCartItemImageUrl, getSocketUrl, setStoredUser } from "@/lib/api";
+import { apiFetch, formatPrice, getCartItemImageUrl, getCartItemLineTotalLabel, getSocketUrl, setStoredUser } from "@/lib/api";
 import { launchRazorpayCheckout } from "@/lib/razorpay";
 import { Order } from "@/lib/types";
 
@@ -376,7 +376,7 @@ export default function OrderTrackingClient({ orderId }: { orderId: string }) {
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold text-slate-950">{item.name}</p>
                       <p className="mt-1 text-sm text-slate-500">Qty {item.qty}</p>
-                      <p className="mt-2 text-sm font-semibold text-slate-900">{formatPrice(item.price * item.qty)}</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-900">{getCartItemLineTotalLabel(item)}</p>
                     </div>
                   </div>
                 ))}
