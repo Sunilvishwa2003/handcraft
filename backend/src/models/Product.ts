@@ -90,12 +90,30 @@ const productSchema = new Schema<IProduct>(
   {
     name: { type: String, required: true },
     description: { type: String, required: true },
-    price: { type: Number, required: true },
-    originalPrice: { type: Number },
+    price: { type: Number, required: true, min: [0, 'Price must be at least 0'], default: 0 },
+    originalPrice: { type: Number, min: [0, 'Original price must be at least 0'] },
     discountPercentage: { type: Number, required: true, default: 0 },
     useApproxPrice: { type: Boolean, default: false, index: true },
-    approxPriceMin: { type: Number },
-    approxPriceMax: { type: Number },
+    approxPriceMin: {
+      type: Number,
+      min: [0, 'Approximate minimum price must be at least 0'],
+      validate: {
+        validator: function (this: IProduct, value: number) {
+          return !this.useApproxPrice || typeof value === 'number';
+        },
+        message: 'Approximate price minimum is required when approximate pricing is enabled',
+      },
+    },
+    approxPriceMax: {
+      type: Number,
+      min: [0, 'Approximate maximum price must be at least 0'],
+      validate: {
+        validator: function (this: IProduct, value: number) {
+          return !this.useApproxPrice || typeof value === 'number';
+        },
+        message: 'Approximate price maximum is required when approximate pricing is enabled',
+      },
+    },
     brand: { type: String, required: true, default: 'Handcrafts' },
     category: { type: String, required: true },
     subcategory: { type: String },
@@ -157,7 +175,7 @@ productSchema.index({ category: 1 });
 // productSchema.index({ semanticKeywords: 1 });
 
 // Pre-save hook: normalize images array to objects { url, alt }
-productSchema.pre('save', function (this: any, next: any) {
+productSchema.pre('save', async function (this: IProduct) {
   if (Array.isArray(this.images) && this.images.length) {
     this.images = this.images.map((item: any) => {
       if (!item) return { url: '', alt: '' };
@@ -183,19 +201,27 @@ productSchema.pre('save', function (this: any, next: any) {
   if (!this.useApproxPrice) {
     this.approxPriceMin = undefined;
     this.approxPriceMax = undefined;
-  } else if (typeof this.approxPriceMin === 'number' && typeof this.approxPriceMax === 'number') {
+  } else {
+    if (
+      typeof this.approxPriceMin !== 'number' ||
+      typeof this.approxPriceMax !== 'number' ||
+      this.approxPriceMin <= 0 ||
+      this.approxPriceMax <= 0
+    ) {
+      throw new Error('Approximate pricing requires valid approxPriceMin and approxPriceMax values greater than 0.');
+    }
     if (this.approxPriceMax < this.approxPriceMin) {
       this.approxPriceMax = this.approxPriceMin;
     }
   }
 
-  // When approximate pricing is enabled, normalize the main price to 0
-  // so that site displays approx ranges instead of a single price.
   if (this.useApproxPrice) {
     this.price = 0;
   }
 
-  next();
+  if (!this.useApproxPrice && this.price <= 0) {
+    throw new Error('Price must be greater than 0 when approximate pricing is disabled');
+  }
 });
 
 const Product = mongoose.model<IProduct>('Product', productSchema);

@@ -28,15 +28,18 @@ import { setupSocket } from './services/realtimeService';
 
 // Environment validation
 const requiredEnvs = [
-  'MONGODB_URI',
-  'JWT_SECRET',
-  'CLOUDINARY_CLOUD_NAME',
-  'CLOUDINARY_API_KEY',
-  'CLOUDINARY_API_SECRET',
-  'CLIENT_URL',
+  ['MONGODB_URI', 'MONGO_URI'],
+  ['JWT_SECRET'],
+  ['CLOUDINARY_CLOUD_NAME'],
+  ['CLOUDINARY_API_KEY'],
+  ['CLOUDINARY_API_SECRET'],
+  ['CLIENT_URL'],
 ];
 
-const missing = requiredEnvs.filter((name) => !process.env[name]);
+const missing = requiredEnvs
+  .filter((names) => !names.some((name) => Boolean(process.env[name])))
+  .map((names) => (names.length === 1 ? names[0] : names.join(' or ')));
+
 if (missing.length) {
   console.error('Missing required environment variables:', missing.join(', '));
   console.error(`Loaded ${requiredEnvs.length - missing.length}/${requiredEnvs.length} required env vars.`);

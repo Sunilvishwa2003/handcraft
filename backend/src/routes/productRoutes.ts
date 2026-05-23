@@ -281,10 +281,17 @@ const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUr
     payload.approxPriceMin = useApproxPrice ? approxPriceMin : undefined;
     payload.approxPriceMax = useApproxPrice ? approxPriceMax : undefined;
 
-    // When approx pricing is enabled, ensure price is set to 0
     if (useApproxPrice) {
       payload.price = 0;
     }
+  }
+
+  if (!payload.useApproxPrice && (typeof payload.price !== 'number' || payload.price <= 0)) {
+    throw new Error('Price must be greater than 0 when approximate pricing is disabled');
+  }
+
+  if (payload.useApproxPrice && (typeof payload.approxPriceMin !== 'number' || typeof payload.approxPriceMax !== 'number')) {
+    throw new Error('Approximate pricing requires both approxPriceMin and approxPriceMax.');
   }
 
   return payload;
@@ -670,7 +677,13 @@ router.post(
         return;
       }
 
-      throw err;
+      const message = err instanceof Error ? err.message : 'Unexpected server error';
+      res.status(500).json({
+        success: false,
+        message,
+        stack: process.env.NODE_ENV === 'development' && err instanceof Error ? err.stack : undefined,
+      });
+      return;
     }
   })
 );
@@ -697,7 +710,13 @@ router.put(
         res.status(400).json({ success: false, message: (err as any).message });
         return;
       }
-      throw err;
+      const message = err instanceof Error ? err.message : 'Unexpected server error';
+      res.status(500).json({
+        success: false,
+        message,
+        stack: process.env.NODE_ENV === 'development' && err instanceof Error ? err.stack : undefined,
+      });
+      return;
     }
   })
 );

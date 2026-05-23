@@ -635,6 +635,14 @@ export default function AdminPage() {
       return;
     }
 
+    if (!productForm.useApproxPrice) {
+      const priceValue = Number(productForm.price || NaN);
+      if (Number.isNaN(priceValue) || priceValue <= 0) {
+        setNotice({ tone: "error", text: "Price must be greater than 0 when approximate pricing is disabled." });
+        return;
+      }
+    }
+
     // Validation for approximate pricing
     if (productForm.useApproxPrice) {
       const min = Number(productForm.approxPriceMin || NaN);
@@ -1410,7 +1418,13 @@ const saveAd = async (event: FormEvent) => {
                     <input
                       type="checkbox"
                       checked={productForm.useApproxPrice}
-                      onChange={(event) => setProductForm((current) => ({ ...current, useApproxPrice: event.target.checked }))}
+                      onChange={(event) =>
+                        setProductForm((current) => ({
+                          ...current,
+                          useApproxPrice: event.target.checked,
+                          price: event.target.checked ? '0' : current.price,
+                        }))
+                      }
                       className="h-4 w-4"
                     />
                     Use approximate price range (stone products)

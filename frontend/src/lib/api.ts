@@ -142,11 +142,19 @@ export const getProductPrimaryImageUrl = (
   return candidates.find(Boolean) || fallback;
 };
 
+export type CartItemImageSource = string | { url?: string | null } | null | undefined;
+
 export const getCartItemImageUrl = (
-  image?: string | null,
+  image?: CartItemImageSource,
   fallback = PRODUCT_IMAGE_PLACEHOLDER,
 ) => {
-  const resolved = image?.trim() ? resolveAssetUrl(image.trim()) : "";
+  const source =
+    typeof image === 'string'
+      ? image.trim()
+      : image?.url?.trim()
+      ? image.url.trim()
+      : '';
+  const resolved = source ? resolveAssetUrl(source) : "";
   return resolved || fallback;
 };
 
@@ -305,7 +313,32 @@ export const getGuestCart = (): Cart => {
 
   try {
     const raw = window.localStorage.getItem("guestCart");
-    const items = raw ? (JSON.parse(raw) as Cart["items"]) : [];
+    const parsedItems = raw ? (JSON.parse(raw) as unknown[]) : [];
+    const items = Array.isArray(parsedItems)
+      ? parsedItems.map((item) => {
+          const cartItem = item as Partial<Cart["items"][number]>;
+          const imageValue = cartItem.image;
+          const normalizedImage =
+            typeof imageValue === "string"
+              ? imageValue.trim()
+              : typeof imageValue === "object" && imageValue !== null && typeof (imageValue as any).url === "string"
+              ? (imageValue as any).url.trim()
+              : "";
+
+          return {
+            product: String(cartItem.product || ""),
+            name: String(cartItem.name || ""),
+            image: normalizedImage || PRODUCT_IMAGE_PLACEHOLDER,
+            price: Number(cartItem.price || 0),
+            qty: Number(cartItem.qty || 0),
+            countInStock: Number(cartItem.countInStock || 0),
+            useApproxPrice: Boolean(cartItem.useApproxPrice),
+            approxPriceMin: typeof cartItem.approxPriceMin === "number" ? cartItem.approxPriceMin : undefined,
+            approxPriceMax: typeof cartItem.approxPriceMax === "number" ? cartItem.approxPriceMax : undefined,
+          };
+        })
+      : [];
+
     const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
     const shippingPrice = items.reduce((sum, item) => sum + item.qty, 0) * SHIPPING_PRICE_PER_PRODUCT;
 
