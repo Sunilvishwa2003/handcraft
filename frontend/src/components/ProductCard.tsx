@@ -151,7 +151,14 @@ export default function ProductCard({
 
           {/* Action Buttons */}
           <div className="mt-2 grid grid-cols-[minmax(0,1fr)_40px] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_48px] sm:gap-3">
-            {showPrice ? (
+            {isApproxPrice ? (
+              <Link
+                href={`/products/${product._id}`}
+                className="btn-mobile flex w-full min-w-0 items-center justify-center rounded-lg bg-sky-500 px-3 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-sky-600 hover:shadow-md sm:rounded-xl sm:px-4 sm:text-sm"
+              >
+                Customize
+              </Link>
+            ) : showPrice ? (
               <button
                 type="button"
                 onClick={addToCart}

@@ -307,7 +307,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
 
             {/* Action Buttons */}
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {showPrice ? (
+              {showPrice && !isApproxPrice ? (
                 <>
                   <button 
                     onClick={addToCart} 
