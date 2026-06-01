@@ -76,6 +76,7 @@ const formatAiResponse = async (message: string) => {
   const products = (dbResults && dbResults.length) ? dbResults : semanticProductSearch(await Product.find({ countInStock: { $gt: 0 } }).lean(), message).slice(0, 5);
 
   const responseProducts = products.map((p: any) => ({
+    _id: p._id,
     name: p.name,
     image: getProductPrimaryImage(p),
     price: p.price,
