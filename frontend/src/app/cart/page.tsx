@@ -150,7 +150,7 @@ export default function CartPage() {
                           <img
                             src={getCartItemImageUrl(item.image)}
                             alt={item.name}
-                            className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gradient-to-br from-gray-100 to-gray-200"
+                            className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-linear-to-br from-gray-100 to-gray-200"
                             loading="lazy"
                             onError={(event) => {
                               event.currentTarget.onerror = null;
@@ -164,7 +164,7 @@ export default function CartPage() {
                           <img
                             src={getCartItemImageUrl(item.image)}
                             alt={item.name}
-                            className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gradient-to-br from-gray-100 to-gray-200"
+                            className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-linear-to-br from-gray-100 to-gray-200"
                             loading="lazy"
                             onError={(event) => {
                               event.currentTarget.onerror = null;
@@ -200,7 +200,7 @@ export default function CartPage() {
                           >
                             −
                           </button>
-                          <span className="min-w-[2.5rem] text-center text-sm font-semibold">{item.qty}</span>
+                          <span className="min-w-10 text-center text-sm font-semibold">{item.qty}</span>
                           <button 
                             className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center text-lg font-semibold text-gray-700 hover:bg-gray-100 rounded-r-lg"
                             onClick={() => updateQty(item.product, item.qty + 1)}
@@ -222,7 +222,8 @@ export default function CartPage() {
                       <p className="font-bold text-gray-950">{getCartItemLineTotalLabel(item)}</p>
                     </div>
                   </article>
-                ))}
+                );
+              })}
               </div>
             ) : (
               <div className="rounded-lg bg-gray-50 p-6 text-center">
