@@ -39,6 +39,9 @@ export const getApiUrl = () => {
 export const getBackendUrl = () => trimTrailingSlash(getApiUrl().replace(/\/api\/?$/, ""));
 export const getSocketUrl = () => getBackendUrl();
 
+export const isValidObjectId = (value: unknown): value is string =>
+  typeof value === 'string' && /^[a-fA-F0-9]{24}$/.test(value);
+
 export const resolveAssetUrl = (url: string) => {
   const trimmed = url?.trim();
   if (!trimmed) {
@@ -308,6 +311,11 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 
   if (user?.token) {
     headers.set("Authorization", `Bearer ${user.token}`);
+  }
+
+  // Defensive guard: prevent accidental requests to /products/undefined or /products/null
+  if (/\/products\/(undefined|null)(?:[/?#]|$)/i.test(path)) {
+    return Promise.reject(new Error('Attempted to call products API with an invalid id'));
   }
 
   const response = await fetch(`${apiUrl}${path}`, {

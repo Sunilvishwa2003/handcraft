@@ -18,8 +18,11 @@ import {
   searchProductsByIntent,
 } from '../services/mlService';
 import { getProductPrimaryImage } from '../utils/productImage';
+import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
+
+router.param('id', validateObjectId('id'));
 
 router.get(
   '/homepage',
@@ -42,6 +45,10 @@ router.get(
   asyncHandler(async (req, res) => {
     const userId = req.query.userId ? String(req.query.userId) : undefined;
     const productId = req.query.productId ? String(req.query.productId) : undefined;
+
+    if (productId && !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ success: false, message: 'Invalid productId' });
+    }
 
     const [recommendedForYou, customersAlsoBought] = await Promise.all([
       getRecommendedForUser(userId, 10),

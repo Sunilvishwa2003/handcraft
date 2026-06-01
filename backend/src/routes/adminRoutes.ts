@@ -11,6 +11,7 @@ import asyncHandler from '../utils/asyncHandler';
 import { normalizeCategorySlug } from '../utils/category';
 import { uploadFilesToCloudinary, type LocalUploadFile } from '../utils/cloudinaryUploads';
 import { buildProductImageArray, type ProductImageCarrier } from '../utils/productImage';
+import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
 
@@ -95,6 +96,7 @@ const serializeAdminProduct = <T extends ProductImageCarrier>(product: T) => ({
 });
 
 router.use(protect, admin);
+router.param('id', validateObjectId('id'));
 
 router.get(
   '/dashboard',

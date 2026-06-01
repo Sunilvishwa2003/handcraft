@@ -4,7 +4,7 @@
 import { FormEvent, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
-import { apiFetch, formatPrice, getProductPrimaryImageUrl, resolveAssetUrl } from "@/lib/api";
+import { apiFetch, formatPrice, getProductPrimaryImageUrl, isValidObjectId, resolveAssetUrl } from "@/lib/api";
 import { getCategoryDisplayName, getProductCategorySlug, isStorefrontCategoryVisible } from "@/lib/catalog";
 import { Ad, Product, ProductListResponse } from "@/lib/types";
 import { useSearchParams } from "next/navigation";
@@ -218,7 +218,7 @@ function ProductsPageContent() {
         .map((ad, index) => ({
           id: ad._id || `category-ad-${index}`,
           title: ad.title?.trim() || "Featured ad",
-          href: ad.targetUrl || (ad.productId ? `/products/${ad.productId}` : "/products"),
+          href: ad.targetUrl || (isValidObjectId(ad.productId) ? `/products/${ad.productId}` : "/products"),
           desktopImage: resolveAssetUrl(ad.desktopImage || ad.imageUrl),
           tabletImage: resolveAssetUrl(ad.tabletImage || ad.desktopImage || ad.imageUrl),
           mobileImage: resolveAssetUrl(ad.mobileImage || ad.desktopImage || ad.imageUrl),

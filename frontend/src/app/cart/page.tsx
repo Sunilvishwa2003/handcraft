@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useEffectEvent, useState } from "react";
-import { apiFetch, formatApproxPriceRange, formatPrice, getCartItemImageUrl, getCartItemLineTotalLabel, getCartItemPriceLabel, getGuestCart, getStoredUser, setGuestCart } from "@/lib/api";
+import { apiFetch, formatApproxPriceRange, formatPrice, getCartItemImageUrl, getCartItemLineTotalLabel, getCartItemPriceLabel, getGuestCart, getStoredUser, isValidObjectId, setGuestCart } from "@/lib/api";
 import { Cart } from "@/lib/types";
 
 export default function CartPage() {
@@ -44,7 +44,7 @@ export default function CartPage() {
   }, []);
 
   const updateQty = async (productId: string, qty: number) => {
-    if (qty < 1) {
+    if (!isValidObjectId(productId) || qty < 1) {
       return;
     }
 
@@ -72,6 +72,10 @@ export default function CartPage() {
   };
 
   const remove = async (productId: string) => {
+    if (!isValidObjectId(productId)) {
+      return;
+    }
+
     const user = getStoredUser();
     setMessage("");
 
@@ -136,31 +140,53 @@ export default function CartPage() {
               <div className="rounded-lg bg-gray-50 p-6 text-center text-sm text-gray-500">Loading cart...</div>
             ) : cart.items.length ? (
               <div className="space-y-3">
-                {cart.items.map((item) => (
-                  <article key={item.product} className="flex gap-3 rounded-lg border border-gray-200 p-3">
-                    {/* Product Image */}
-                    <Link href={`/products/${item.product}`} className="shrink-0">
-                      <img
-                        src={getCartItemImageUrl(item.image)}
-                        alt={item.name}
-                        className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gradient-to-br from-gray-100 to-gray-200"
-                        loading="lazy"
-                        onError={(event) => {
-                          event.currentTarget.onerror = null;
-                          event.currentTarget.src = '/mahabs-logo.svg';
-                          event.currentTarget.className = 'h-20 w-20 sm:h-24 sm:w-24 object-contain p-2 rounded-md bg-gray-100';
-                        }}
-                      />
-                    </Link>
+                {cart.items.map((item) => {
+                  const productHref = item.product && isValidObjectId(item.product) ? `/products/${item.product}` : undefined;
+                  return (
+                    <article key={item.product} className="flex gap-3 rounded-lg border border-gray-200 p-3">
+                      {/* Product Image */}
+                      {productHref ? (
+                        <Link href={productHref} className="shrink-0">
+                          <img
+                            src={getCartItemImageUrl(item.image)}
+                            alt={item.name}
+                            className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gradient-to-br from-gray-100 to-gray-200"
+                            loading="lazy"
+                            onError={(event) => {
+                              event.currentTarget.onerror = null;
+                              event.currentTarget.src = '/mahabs-logo.svg';
+                              event.currentTarget.className = 'h-20 w-20 sm:h-24 sm:w-24 object-contain p-2 rounded-md bg-gray-100';
+                            }}
+                          />
+                        </Link>
+                      ) : (
+                        <div className="shrink-0">
+                          <img
+                            src={getCartItemImageUrl(item.image)}
+                            alt={item.name}
+                            className="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-md bg-gradient-to-br from-gray-100 to-gray-200"
+                            loading="lazy"
+                            onError={(event) => {
+                              event.currentTarget.onerror = null;
+                              event.currentTarget.src = '/mahabs-logo.svg';
+                              event.currentTarget.className = 'h-20 w-20 sm:h-24 sm:w-24 object-contain p-2 rounded-md bg-gray-100';
+                            }}
+                          />
+                        </div>
+                      )}
 
-                    {/* Product Details */}
-                    <div className="flex-1 min-w-0">
-                      <Link 
-                        href={`/products/${item.product}`} 
-                        className="font-semibold text-gray-950 hover:text-cyan-700 line-clamp-2 text-sm sm:text-base"
-                      >
-                        {item.name}
-                      </Link>
+                      {/* Product Details */}
+                      <div className="flex-1 min-w-0">
+                        {productHref ? (
+                          <Link
+                            href={productHref}
+                            className="font-semibold text-gray-950 hover:text-cyan-700 line-clamp-2 text-sm sm:text-base"
+                          >
+                            {item.name}
+                          </Link>
+                        ) : (
+                          <div className="font-semibold text-gray-950 line-clamp-2 text-sm sm:text-base">{item.name}</div>
+                        )}
                       {getCartItemPriceLabel(item) ? (
                         <p className="mt-1 text-sm font-bold text-gray-950">{getCartItemPriceLabel(item)}</p>
                       ) : null}

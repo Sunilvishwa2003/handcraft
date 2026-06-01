@@ -4,9 +4,12 @@ import User from '../models/User';
 import BehaviorEvent from '../models/BehaviorEvent';
 import { protect } from '../middleware/authMiddleware';
 import asyncHandler from '../utils/asyncHandler';
+import validateObjectId from '../middleware/validateObjectId';
 import { AuthenticatedRequest } from '../types/http';
 
 const router = express.Router();
+
+router.param('productId', validateObjectId('productId'));
 
 router.get(
   '/ids',

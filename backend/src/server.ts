@@ -116,6 +116,17 @@ const io = new Server(httpServer, {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Temporary request logger for debugging undefined ID requests
+app.use((req, _res, next) => {
+  console.log(req.method, req.url);
+  if (req.url && req.url.includes('/products/undefined')) {
+    console.error('[warning] Detected request to /products/undefined');
+    console.error('Headers:', JSON.stringify(req.headers));
+    console.error('Referer:', req.get('referer'));
+  }
+  next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);

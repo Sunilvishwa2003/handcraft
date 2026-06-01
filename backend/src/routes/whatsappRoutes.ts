@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Product from '../models/Product';
 import asyncHandler from '../utils/asyncHandler';
 
@@ -21,6 +22,10 @@ router.post(
   asyncHandler(async (req, res) => {
     const productId = sanitize(req.body?.productId);
     const inquiryType = sanitize(req.body?.inquiryType) || 'request-quotation';
+    if (productId && !mongoose.isValidObjectId(productId)) {
+      res.status(400);
+      throw new Error('Invalid productId');
+    }
     const product = productId ? await Product.findById(productId).select('name').lean() : null;
 
     const lines = [

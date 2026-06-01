@@ -16,8 +16,11 @@ import {
 import { emitOrderUpdate, emitToUser } from '../services/realtimeService';
 import { buildOrderTelegramMessage } from '../utils/buildOrderTelegramMessage';
 import { sendTelegramMessage } from '../utils/sendTelegramMessage';
+import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
+
+router.param('id', validateObjectId('id'));
 
 router.post(
   '/summary',

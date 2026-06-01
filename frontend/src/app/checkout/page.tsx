@@ -11,6 +11,7 @@ import {
   getCartItemLineTotalLabel,
   getGuestCart,
   getStoredUser,
+  isValidObjectId,
   setBuyNowCart,
   setGuestCart,
 } from "@/lib/api";
@@ -102,6 +103,11 @@ function CheckoutPageContent() {
   }, [isBuyNowMode, successOrderId]);
 
   const updateQty = async (productId: string, qty: number) => {
+    if (!isValidObjectId(productId)) {
+      setMessage('Invalid product selected.');
+      return;
+    }
+
     if (!cart) {
       return;
     }
@@ -149,6 +155,11 @@ function CheckoutPageContent() {
   };
 
   const removeItem = async (productId: string) => {
+    if (!isValidObjectId(productId)) {
+      setMessage('Invalid product selected.');
+      return;
+    }
+
     if (!cart) {
       return;
     }

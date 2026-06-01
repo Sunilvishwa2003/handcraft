@@ -13,8 +13,12 @@ import { getCategoryDisplayName, normalizeCategorySlug } from '../utils/category
 import { isCloudinaryImageUpload, uploadFilesToCloudinary, type LocalUploadFile } from '../utils/cloudinaryUploads';
 import { getProductPrimaryImage } from '../utils/productImage';
 import { getCustomersAlsoBought, sortProducts } from '../services/mlService';
+import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
+
+// Validate :id params early to prevent CastError when id is missing/invalid
+router.param('id', validateObjectId('id'));
 
 const parseNumber = (value: unknown, fallback = 0) => {
   const parsed = Number(value);

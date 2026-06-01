@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useSyncExternalStore } from "react";
-import { apiFetch, getStoredUser, WISHLIST_IDS_STORAGE_KEY } from "@/lib/api";
+import { apiFetch, getStoredUser, isValidObjectId, WISHLIST_IDS_STORAGE_KEY } from "@/lib/api";
 import { Product } from "@/lib/types";
 import { useStoredUser } from "@/hooks/useStoredUser";
 
@@ -103,6 +103,10 @@ export const refreshWishlistIds = async () => {
 };
 
 export const toggleWishlistProduct = async (productId: string) => {
+  if (!isValidObjectId(productId)) {
+    throw new Error('Invalid product ID for wishlist action.');
+  }
+
   const user = getStoredUser();
   if (!user?.token) {
     throw new Error("Login to save items to your wishlist.");
@@ -145,7 +149,7 @@ export function useWishlist(productId?: string) {
   }, [user?._id, user?.token, wishlistIds.length]);
 
   const isWishlisted = useMemo(() => {
-    if (!productId) {
+    if (!isValidObjectId(productId)) {
       return false;
     }
 

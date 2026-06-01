@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { isValidObjectId } from "@/lib/api";
 import { toggleWishlistProduct, useWishlist } from "@/hooks/useWishlist";
 
 type WishlistButtonProps = {
@@ -31,6 +32,11 @@ export default function WishlistButton({
   const redirectTarget = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
   const handleToggle = async () => {
+    if (!isValidObjectId(productId)) {
+      console.error('Missing or invalid Product ID for wishlist toggle', productId);
+      return;
+    }
+
     setLoading(true);
 
     try {

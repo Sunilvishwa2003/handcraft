@@ -4,8 +4,11 @@ import { admin, protect } from '../middleware/authMiddleware';
 import asyncHandler from '../utils/asyncHandler';
 import { AuthenticatedRequest } from '../types/http';
 import { emitOffer, emitToUser } from '../services/realtimeService';
+import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
+
+router.param('id', validateObjectId('id'));
 
 router.get(
   '/',

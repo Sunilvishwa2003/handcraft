@@ -18,6 +18,7 @@ import {
   getProductImageUrl,
   getStoredUser,
   isBackendAssetUrl,
+  isValidObjectId,
   setBuyNowCart,
   setGuestCart,
   getProductEstimatePrice,
@@ -46,6 +47,12 @@ export default function ProductDetailClient({ productId }: { productId: string }
   const [isCustomizing, setIsCustomizing] = useState(false);
 
   useEffect(() => {
+    if (!productId || !isValidObjectId(productId)) {
+      console.error('Missing or invalid Product ID in ProductDetailClient', productId);
+      setMessage('Product not found');
+      return;
+    }
+
     apiFetch<Product>(`/products/${productId}`)
       .then((data) => {
         setProduct(data);
@@ -212,7 +219,11 @@ export default function ProductDetailClient({ productId }: { productId: string }
               ) : (
                 <div className="p-0">
                   {/* ProductImageGallery will handle clicks and lightbox */}
-                  <ProductImageGallery images={product.images || []} />
+                  <ProductImageGallery
+                    images={product.images || []}
+                    selectedIndex={selectedImage}
+                    onSelectedIndexChange={setSelectedImage}
+                  />
                 </div>
               )}
             </div>

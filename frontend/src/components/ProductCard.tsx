@@ -39,6 +39,11 @@ export default function ProductCard({
   const productPriceLabel = isApproxPrice ? `${formatApproxPriceRange(product)} approx` : formatPrice(getProductEstimatePrice(product));
 
   const addToCart = async () => {
+    if (!product._id) {
+      toast.error('Invalid product data.');
+      return;
+    }
+
     const user = getStoredUser();
     try {
       if (user?.token) {
@@ -63,6 +68,7 @@ export default function ProductCard({
     }
   };
 
+  const productUrl = product._id ? `/products/${product._id}` : '/products';
   const productImage = getProductPrimaryImageUrl(product);
 
   return (
@@ -80,7 +86,7 @@ export default function ProductCard({
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Product Image */}
-        <Link href={`/products/${product._id}`} className="block min-w-0" aria-label={`View ${product.name} details`}>
+        <Link href={productUrl} className="block min-w-0" aria-label={`View ${product.name} details`}>
           <div
             className={`relative overflow-hidden rounded-lg bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.12),_transparent_60%)] ${
               compact ? "aspect-[4/4.3] sm:aspect-square" : "aspect-[4/4.4] sm:aspect-square"
@@ -153,7 +159,7 @@ export default function ProductCard({
           <div className="mt-2 grid grid-cols-[minmax(0,1fr)_40px] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_48px] sm:gap-3">
             {isApproxPrice ? (
               <Link
-                href={`/products/${product._id}`}
+                href={productUrl}
                 className="btn-mobile flex w-full min-w-0 items-center justify-center rounded-lg bg-sky-500 px-3 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-sky-600 hover:shadow-md sm:rounded-xl sm:px-4 sm:text-sm"
               >
                 Customize
@@ -162,21 +168,21 @@ export default function ProductCard({
               <button
                 type="button"
                 onClick={addToCart}
-                disabled={product.countInStock <= 0}
+                disabled={!product._id || product.countInStock <= 0}
                 className="btn-mobile flex w-full min-w-0 items-center justify-center rounded-lg bg-sky-500 px-3 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-sky-600 hover:shadow-md disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 sm:rounded-xl sm:px-4 sm:text-sm"
               >
                 Add to Cart
               </button>
             ) : (
               <Link
-                href={`/products/${product._id}`}
+                href={productUrl}
                 className="btn-mobile flex w-full min-w-0 items-center justify-center rounded-lg bg-sky-500 px-3 py-2.5 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-sky-600 hover:shadow-md sm:rounded-xl sm:px-4 sm:text-sm"
               >
                 Customize
               </Link>
             )}
             <Link
-              href={`/products/${product._id}`}
+              href={productUrl}
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 transition hover:bg-gray-50 sm:h-12 sm:w-12 sm:rounded-xl"
               aria-label={`View details of ${product.name}`}
             >

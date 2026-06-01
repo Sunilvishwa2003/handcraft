@@ -4,7 +4,7 @@ import { type KeyboardEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Chatbot from "@/components/Chatbot";
 import ProductCard from "@/components/ProductCard";
-import { apiFetch, getRecentlyViewed, getStoredUser, resolveAssetUrl } from "@/lib/api";
+import { apiFetch, getRecentlyViewed, getStoredUser, isValidObjectId, resolveAssetUrl } from "@/lib/api";
 import { getCategoryDisplayName, getProductCategorySlug, isStorefrontCategoryVisible } from "@/lib/catalog";
 import { Product } from "@/lib/types";
 
@@ -128,7 +128,7 @@ export default function Home() {
           id: ad._id || `admin-ad-${index}`,
           title: ad.title?.trim() || "Featured ad",
           description: ad.description?.trim() || undefined,
-          link: ad.targetUrl || (ad.productId ? `/products/${ad.productId}` : "/products"),
+          link: ad.targetUrl || (isValidObjectId(ad.productId) ? `/products/${ad.productId}` : "/products"),
           desktopImage: resolveAssetUrl(ad.desktopImage || ad.imageUrl),
           tabletImage: resolveAssetUrl(ad.tabletImage || ad.desktopImage || ad.imageUrl),
           mobileImage: resolveAssetUrl(ad.mobileImage || ad.desktopImage || ad.imageUrl),

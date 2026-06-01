@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Cart from '../models/Cart';
 import Product from '../models/Product';
 import BehaviorEvent from '../models/BehaviorEvent';
@@ -7,8 +8,11 @@ import asyncHandler from '../utils/asyncHandler';
 import { AuthenticatedRequest } from '../types/http';
 import { calculateOrderTotals } from '../utils/pricing';
 import { getProductPrimaryImage } from '../utils/productImage';
+import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
+
+router.param('productId', validateObjectId('productId'));
 
 const getCartItemPrice = (product: any) => {
   if (product.useApproxPrice && typeof product.approxPriceMin === 'number' && typeof product.approxPriceMax === 'number' && product.approxPriceMax >= product.approxPriceMin) {
@@ -53,6 +57,11 @@ router.put(
     if (!productId || quantity < 1) {
       res.status(400);
       throw new Error('productId and qty are required');
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(String(productId))) {
+      res.status(400);
+      throw new Error('Invalid productId');
     }
 
     const product = await Product.findById(productId);
