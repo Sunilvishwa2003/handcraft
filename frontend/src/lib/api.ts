@@ -205,7 +205,7 @@ export const getProductEstimatePrice = (product: Product | CartItem) =>
 
 export const getCartItemPriceLabel = (item: CartItem) => {
   if (item.useApproxPrice && item.approxPriceMin !== undefined && item.approxPriceMax !== undefined) {
-    return `${formatApproxPriceRange(item)} approx`;
+    return `${formatApproxPriceRange(item)}`;
   }
 
   return item.price > 0 ? formatPrice(item.price) : "";
@@ -213,7 +213,7 @@ export const getCartItemPriceLabel = (item: CartItem) => {
 
 export const getCartItemLineTotalLabel = (item: CartItem) => {
   if (item.useApproxPrice && item.approxPriceMin !== undefined && item.approxPriceMax !== undefined) {
-    return `${formatApproxPriceRange(item)} approx`;
+    return `${formatApproxPriceRange(item)}`;
   }
 
   const total = item.price * item.qty;
