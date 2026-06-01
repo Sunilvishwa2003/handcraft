@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['192.168.1.8'],
-  outputFileTracingRoot: process.cwd(),
   turbopack: {
     root: process.cwd(),
   },
