@@ -17,7 +17,7 @@ export default function OrderDetailsView({ orderId }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    apiFetch<Order>(`/orders/${orderId}`)
+    apiFetch<Order>(`/admin/orders/${orderId}`)
       .then((data) => {
         setOrder(data);
         setStatus(data.status || "");
@@ -83,6 +83,12 @@ export default function OrderDetailsView({ orderId }: Props) {
               <p className="mt-2 text-sm text-slate-600">{order.shippingAddress.address}</p>
               <p className="text-sm text-slate-600">{order.shippingAddress.city}, {order.shippingAddress.postalCode}</p>
               <p className="text-sm text-slate-600">{order.shippingAddress.country}</p>
+              {order.estimatedDelivery ? (
+                <div className="mt-4 rounded-2xl bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
+                  <p className="font-semibold text-slate-900">Estimated delivery</p>
+                  <p>{order.estimatedDelivery}</p>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -138,6 +144,9 @@ export default function OrderDetailsView({ orderId }: Props) {
               <h2 className="text-lg font-semibold text-slate-950">Payment</h2>
               <p className="mt-3 text-sm text-slate-600">Method: {order.paymentMethod}</p>
               <p className="mt-1 text-sm text-slate-600">Status: {order.isPaid ? `Paid at ${order.paidAt}` : 'Not paid'}</p>
+              {order.isDelivered ? (
+                <p className="mt-1 text-sm text-slate-600">Delivered at: {order.deliveredAt || 'Delivered'}</p>
+              ) : null}
             </div>
             <div>
               <h2 className="text-lg font-semibold text-slate-950">Timeline</h2>

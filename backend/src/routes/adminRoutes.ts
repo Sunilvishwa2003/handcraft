@@ -202,6 +202,18 @@ router.get(
 );
 
 router.get(
+  '/orders/:id',
+  asyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id).populate('user', 'name email');
+    if (!order) {
+      res.status(404);
+      throw new Error('Order not found');
+    }
+    res.json(order);
+  })
+);
+
+router.get(
   '/products',
   asyncHandler(async (_req, res) => {
     const products = await Product.find().sort({ createdAt: -1 }).lean();
