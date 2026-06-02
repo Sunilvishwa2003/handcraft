@@ -8,6 +8,7 @@ import Ad, { AD_PLACEMENTS, type AdPlacement } from '../models/Ad';
 import { admin, protect } from '../middleware/authMiddleware';
 import upload from '../middleware/uploadMiddleware';
 import asyncHandler from '../utils/asyncHandler';
+import { sendTelegramMessage } from '../utils/sendTelegramMessage';
 import { normalizeCategorySlug } from '../utils/category';
 import { uploadFilesToCloudinary, type LocalUploadFile } from '../utils/cloudinaryUploads';
 import { buildProductImageArray, type ProductImageCarrier } from '../utils/productImage';
@@ -97,6 +98,21 @@ const serializeAdminProduct = <T extends ProductImageCarrier>(product: T) => ({
 
 router.use(protect, admin);
 router.param('id', validateObjectId('id'));
+
+// Admin utility: send a test Telegram message using configured bot/token
+router.post(
+  '/test-telegram',
+  asyncHandler(async (req, res) => {
+    const message = String(req.body?.message || `Order notification test from ${process.env.APP_NAME || 'backend'}`);
+    try {
+      await sendTelegramMessage(message);
+      res.json({ success: true, message: 'Telegram message sent (or queued).' });
+    } catch (error: any) {
+      console.error('[telegram] test send failed:', error?.message || error);
+      res.status(502).json({ success: false, error: String(error?.message || error) });
+    }
+  })
+);
 
 router.get(
   '/dashboard',
