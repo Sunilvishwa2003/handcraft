@@ -16,14 +16,40 @@ export default function OrderDetailsView({ orderId }: Props) {
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
-    setLoading(true);
-    apiFetch<Order>(`/admin/orders/${orderId}`)
-      .then((data) => {
+    let active = true;
+    const loadOrder = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await apiFetch<Order>(`/admin/orders/${orderId}`);
+        if (!active) return;
         setOrder(data);
         setStatus(data.status || "");
-      })
-      .catch((err) => setError(String(err.message || err)))
-      .finally(() => setLoading(false));
+        return;
+      } catch (adminError) {
+        console.warn('Admin order fetch failed, falling back to protected order route:', adminError);
+      }
+
+      try {
+        const fallbackData = await apiFetch<Order>(`/orders/${orderId}`);
+        if (!active) return;
+        setOrder(fallbackData);
+        setStatus(fallbackData.status || "");
+      } catch (fallbackError) {
+        if (!active) return;
+        const message = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        setError(message);
+      }
+    };
+
+    loadOrder().finally(() => {
+      if (active) setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
   }, [orderId]);
 
   const updateStatus = async () => {

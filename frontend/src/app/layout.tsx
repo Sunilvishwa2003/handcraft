@@ -3,10 +3,29 @@ import "./globals.css";
 import SiteChrome from "@/components/layout/SiteChrome";
 import AppProviders from "@/components/providers/AppProviders";
 
+const siteUrl = process.env.NEXT_PUBLIC_URL || "https://mahabscrafto.com";
+const siteTitle = "Mahabs Crafto | Vinayagar, Murugan, Hanuman Statues & Stone Name Boards";
+const siteDescription =
+  "Buy handcrafted Vinayagar, Murugan, Hanuman statues, stone name boards, and traditional Tamil Nadu home decor from Mahabs Crafto.";
+
 export const metadata: Metadata = {
-  title: "MahabsCrafto",
-  description: "A heritage-inspired marketplace delivering handcrafted goods with rich style and seamless checkout.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_URL || "http://localhost:3000"),
+  title: siteTitle,
+  description: siteDescription,
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: new URL(siteUrl),
+  },
+  keywords: [
+    "Vinayagar statue",
+    "Murugan statue",
+    "Hanuman statue",
+    "stone name board",
+    "Tamil Nadu handicrafts",
+    "home decor statues",
+    "stone carving",
+    "granite statues",
+    "Mahabs Crafto",
+  ],
   icons: {
     icon: [
       {
@@ -36,17 +55,29 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "MahabsCrafto",
-    description: "A heritage-inspired marketplace for handcrafted goods with elegant product discovery and order tracking.",
+    title: siteTitle,
+    description: siteDescription,
     type: "website",
     locale: "en_US",
-    images: ["/file.svg"],
+    url: new URL(siteUrl),
+    images: [
+      {
+        url: "/file.svg",
+        width: 1200,
+        height: 630,
+        alt: "Mahabs Crafto",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "MahabsCrafto",
-    description: "A heritage-inspired marketplace for handcrafted goods with elegant product discovery and order tracking.",
+    title: siteTitle,
+    description: siteDescription,
     images: ["/file.svg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
