@@ -111,6 +111,10 @@ const corsOptions = {
 
 const io = new Server(httpServer, {
   cors: corsOptions,
+  transports: ["websocket", "polling"],
+  allowUpgrades: true,
+  pingInterval: 25000,
+  pingTimeout: 20000,
 });
 
 app.use(cors(corsOptions));

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, LogIn, UserRound } from 'lucide-react';
@@ -12,8 +13,7 @@ import { getCategoryDisplayName, getProductCategorySlug, storefrontFeaturedCateg
 import { Cart } from '@/lib/types';
 import NotificationBell from './NotificationBell';
 
-const NAVBAR_LOGO_SRC = '/est-1982-navbar-logo.svg';
-const NAVBAR_LOGO_FALLBACK = '/mahabs-logo.svg';
+const NAVBAR_LOGO_SRC = '/mahabs-logo.svg';
 
 export default function Navbar() {
   const router = useRouter();
@@ -133,14 +133,14 @@ export default function Navbar() {
             style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}
           >
             <div className="relative h-10 w-10 sm:h-16 sm:w-16 md:h-20 md:w-20 shrink-0">
-              <img
+              <Image
                 src={NAVBAR_LOGO_SRC}
                 alt="MahabsCrafto logo"
-                className="h-full w-full object-contain"
-                onError={(event) => {
-                  event.currentTarget.onerror = null;
-                  event.currentTarget.src = NAVBAR_LOGO_FALLBACK;
-                }}
+                fill
+                priority
+                unoptimized
+                sizes="(max-width: 640px) 40px, (max-width: 768px) 64px, 80px"
+                className="object-contain"
               />
             </div>
             <div className="flex flex-col leading-tight min-w-0">

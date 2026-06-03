@@ -119,10 +119,21 @@ export function AdminWorkspace() {
       return;
     }
 
-    const socket = io(getSocketUrl(), { transports: ["websocket"] });
+    const socket = io(getSocketUrl(), {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+    });
 
     socket.on("connect", () => {
       socket.emit("join:user", user._id);
+    });
+
+    socket.on("connect_error", (error: any) => {
+      console.error("Socket.IO connection error:", error);
     });
 
     socket.on("notification", (payload: { title?: string; message?: string }) => {
