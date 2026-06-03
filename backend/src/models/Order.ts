@@ -23,6 +23,7 @@ interface ITrackingEvent {
 }
 
 export interface IOrder extends Document {
+  orderId: string;
   user: mongoose.Types.ObjectId | IUser;
   orderItems: IOrderItem[];
   shippingAddress: {
@@ -32,6 +33,15 @@ export interface IOrder extends Document {
     country: string;
     phone?: string;
   };
+  billingAddress?: {
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    phone?: string;
+  };
+  orderNotes?: string;
+  trackingNumber?: string;
   shippingOption: 'standard' | 'express' | 'priority';
   estimatedDelivery?: string;
   paymentMethod: string;
@@ -54,7 +64,7 @@ export interface IOrder extends Document {
   paidAt?: Date;
   isDelivered: boolean;
   deliveredAt?: Date;
-  status: 'placed' | 'confirmed' | 'packed' | 'shipped' | 'out-for-delivery' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'packed' | 'shipped' | 'out-for-delivery' | 'delivered' | 'cancelled' | 'placed' | 'confirmed';
   trackingEvents: ITrackingEvent[];
   fraudRiskScore: number;
   fraudFlags: string[];
@@ -62,6 +72,7 @@ export interface IOrder extends Document {
 
 const orderSchema = new Schema<IOrder>(
   {
+    orderId: { type: String, required: true, unique: true, index: true },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     orderItems: [
       {
@@ -83,6 +94,15 @@ const orderSchema = new Schema<IOrder>(
       country: { type: String, required: true },
       phone: { type: String },
     },
+    billingAddress: {
+      address: { type: String },
+      city: { type: String },
+      postalCode: { type: String },
+      country: { type: String },
+      phone: { type: String },
+    },
+    orderNotes: { type: String },
+    trackingNumber: { type: String },
     shippingOption: {
       type: String,
       enum: ['standard', 'express', 'priority'],
@@ -111,8 +131,8 @@ const orderSchema = new Schema<IOrder>(
     deliveredAt: { type: Date },
     status: {
       type: String,
-      enum: ['placed', 'confirmed', 'packed', 'shipped', 'out-for-delivery', 'delivered', 'cancelled'],
-      default: 'placed',
+      enum: ['pending', 'processing', 'packed', 'shipped', 'out-for-delivery', 'delivered', 'cancelled', 'placed', 'confirmed'],
+      default: 'pending',
       index: true,
     },
     trackingEvents: [

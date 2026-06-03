@@ -581,10 +581,31 @@ function ProductsPageContent() {
                 ))}
               </div>
             ) : (
-              <div className="mt-4 rounded-lg bg-gray-50 p-6 text-sm text-gray-500 text-center">
-                {selectedCategory && selectedCategory.toLowerCase() !== 'all'
-                  ? 'No products found in this category.'
-                  : 'No products match these filters.'}
+              <div className="mt-4 rounded-lg bg-gray-50 p-6 text-center">
+                <div className="text-sm font-semibold text-slate-700">No products found.</div>
+                <div className="mt-1 text-sm text-gray-500">
+                  {selectedCategory && selectedCategory.toLowerCase() !== 'all'
+                    ? 'Try a different category or broader keywords.'
+                    : 'Try Ganesh, Vinayagar, Murugan, Lakshmi, decor, or statue.'}
+                </div>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {['Ganesh', 'Vinayagar', 'Murugan', 'Lakshmi', 'Wall Decor', 'Frames'].map((term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => {
+                        const params = new URLSearchParams(searchParams);
+                        params.set('q', term);
+                        params.delete('page');
+                        window.history.replaceState(null, '', `/products?${params.toString()}`);
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }}
+                      className="rounded-full border border-cyan-200 bg-white px-3 py-1 text-xs font-semibold text-cyan-700 hover:bg-cyan-50"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </section>

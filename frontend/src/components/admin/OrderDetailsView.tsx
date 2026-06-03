@@ -4,7 +4,6 @@ import { Order } from "../../lib/types";
 import { apiFetch, formatPrice, getCartItemImageUrl } from "../../lib/api";
 import OrderTimeline from "./OrderTimeline";
 import Invoice from "./Invoice";
-import TelegramTestButton from "./TelegramTestButton";
 
 type Props = { orderId: string };
 
@@ -14,6 +13,7 @@ export default function OrderDetailsView({ orderId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [trackingNumber, setTrackingNumber] = useState<string>("");
 
   useEffect(() => {
     let active = true;
@@ -26,6 +26,7 @@ export default function OrderDetailsView({ orderId }: Props) {
         if (!active) return;
         setOrder(data);
         setStatus(data.status || "");
+        setTrackingNumber(data.trackingNumber || "");
         return;
       } catch (adminError) {
         console.warn('Admin order fetch failed, falling back to protected order route:', adminError);
@@ -36,6 +37,7 @@ export default function OrderDetailsView({ orderId }: Props) {
         if (!active) return;
         setOrder(fallbackData);
         setStatus(fallbackData.status || "");
+        setTrackingNumber(fallbackData.trackingNumber || "");
       } catch (fallbackError) {
         if (!active) return;
         const message = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
@@ -53,13 +55,16 @@ export default function OrderDetailsView({ orderId }: Props) {
   }, [orderId]);
 
   const updateStatus = async () => {
+    if (!order) return;
     try {
       setLoading(true);
-      const updated = await apiFetch<Order>(`/orders/${orderId}/status`, {
+      const updated = await apiFetch<Order>(`/admin/orders/${orderId}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ status, message }),
+        body: JSON.stringify({ status, message, trackingNumber }),
       });
       setOrder(updated);
+      setStatus(updated.status || "");
+      setTrackingNumber(updated.trackingNumber || "");
       setMessage("");
     } catch (err: any) {
       setError(String(err.message || err));
@@ -89,7 +94,7 @@ export default function OrderDetailsView({ orderId }: Props) {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-slate-950">Order details</h2>
-              <p className="mt-1 text-sm text-slate-600">Order #{order._id}</p>
+              <p className="mt-1 text-sm text-slate-600">Order #{order.orderId || order._id}</p>
             </div>
             <div className="space-y-2 text-right">
               <p className="text-sm text-slate-500">Status</p>
@@ -106,9 +111,9 @@ export default function OrderDetailsView({ orderId }: Props) {
             </div>
             <div className="rounded-3xl bg-slate-50 p-4">
               <h3 className="text-sm font-semibold text-slate-900">Shipping address</h3>
-              <p className="mt-2 text-sm text-slate-600">{order.shippingAddress.address}</p>
-              <p className="text-sm text-slate-600">{order.shippingAddress.city}, {order.shippingAddress.postalCode}</p>
-              <p className="text-sm text-slate-600">{order.shippingAddress.country}</p>
+              <p className="mt-2 text-sm text-slate-600">{order.shippingAddress?.address || "-"}</p>
+              <p className="text-sm text-slate-600">{order.shippingAddress?.city || "-"}, {order.shippingAddress?.postalCode || "-"}</p>
+              <p className="text-sm text-slate-600">{order.shippingAddress?.country || "-"}</p>
               {order.estimatedDelivery ? (
                 <div className="mt-4 rounded-2xl bg-white px-3 py-3 text-sm text-slate-700 shadow-sm">
                   <p className="font-semibold text-slate-900">Estimated delivery</p>
@@ -199,14 +204,24 @@ export default function OrderDetailsView({ orderId }: Props) {
                 onChange={(e) => setStatus(e.target.value)}
                 className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
               >
-                <option value="placed">Placed</option>
-                <option value="confirmed">Confirmed</option>
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
                 <option value="packed">Packed</option>
                 <option value="shipped">Shipped</option>
                 <option value="out-for-delivery">Out For Delivery</option>
                 <option value="delivered">Delivered</option>
                 <option value="cancelled">Cancelled</option>
               </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-900">Tracking number</label>
+              <input
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+                className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-500"
+                placeholder="Enter tracking number"
+              />
             </div>
 
             <div>
@@ -229,9 +244,28 @@ export default function OrderDetailsView({ orderId }: Props) {
                 {loading ? "Updating…" : "Update order status"}
               </button>
               <Invoice order={order} />
-              <TelegramTestButton orderId={order._id} />
             </div>
           </div>
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-950">Billing address</h2>
+          {order.billingAddress ? (
+            <div className="mt-4 space-y-1 text-sm text-slate-600">
+              <p>{order.billingAddress.address}</p>
+              <p>{order.billingAddress.city}, {order.billingAddress.postalCode}</p>
+              <p>{order.billingAddress.country}</p>
+              {order.billingAddress.phone ? <p>{order.billingAddress.phone}</p> : null}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-600">Billing address is the same as the shipping address.</p>
+          )}
+          {order.orderNotes ? (
+            <div className="mt-6 rounded-3xl bg-slate-50 p-4 text-sm text-slate-700">
+              <p className="font-semibold text-slate-900">Order notes</p>
+              <p className="mt-2">{order.orderNotes}</p>
+            </div>
+          ) : null}
         </div>
       </aside>
     </div>

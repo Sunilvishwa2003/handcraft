@@ -46,6 +46,7 @@ type DynamicPriceSuggestion = {
 
 type ProductFormState = {
   name: string;
+  sku: string;
   brand: string;
   category: string;
   subcategory: string;
@@ -143,6 +144,7 @@ const bulkImportExample = JSON.stringify(
 
 const createEmptyProductForm = (): ProductFormState => ({
   name: "",
+  sku: "",
   brand: "MahabsCrafto",
   category: "home-decor",
   subcategory: "",
@@ -248,6 +250,7 @@ const formFromProduct = (product: Product): ProductFormState => {
 
   return {
     name: product.name,
+    sku: product.sku || "",
     brand: product.brand,
     category: typeof product.category === "string" ? product.category : product.category?.name || "",
     subcategory: product.subcategory || "",
@@ -279,6 +282,7 @@ const buildProductPayload = (form: ProductFormState) => {
 
   return {
     name: form.name.trim(),
+    sku: form.sku.trim(),
     brand: form.brand.trim(),
     category: form.category.trim(),
     subcategory: form.subcategory.trim() || undefined,
@@ -1229,6 +1233,7 @@ const saveAd = async (event: FormEvent) => {
 
               <div className="mt-4 grid gap-3">
                 <Field label="Product name" value={productForm.name} onChange={(value) => setProductForm((current) => ({ ...current, name: value }))} />
+                <Field label="SKU" value={productForm.sku} onChange={(value) => setProductForm((current) => ({ ...current, sku: value.toUpperCase() }))} placeholder="GNSH-001" />
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <Label title="Brand">
@@ -1397,12 +1402,12 @@ const saveAd = async (event: FormEvent) => {
                   />
                 </Label>
 
-                <Field label="Tags" value={productForm.tags} onChange={(value) => setProductForm((current) => ({ ...current, tags: value }))} placeholder="eco-friendly, festive, gifting" />
+                <Field label="Tags / Search keywords" value={productForm.tags} onChange={(value) => setProductForm((current) => ({ ...current, tags: value }))} placeholder="ganesh, vinayagar, ganapathi, pillaiyar" />
                 <Field
-                  label="Semantic keywords"
+                  label="Additional search keywords"
                   value={productForm.semanticKeywords}
                   onChange={(value) => setProductForm((current) => ({ ...current, semanticKeywords: value }))}
-                  placeholder="handmade basket, home organizer, woven decor"
+                  placeholder="lord ganesha, ganesh idol, ganesh frame, wall decor"
                 />
                 <div className="mt-2">
                   <label className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-3 text-sm font-semibold text-gray-700">

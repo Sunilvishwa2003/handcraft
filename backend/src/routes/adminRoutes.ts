@@ -5,9 +5,11 @@ import Order from '../models/Order';
 import Product, { type IProduct } from '../models/Product';
 import User from '../models/User';
 import Ad, { AD_PLACEMENTS, type AdPlacement } from '../models/Ad';
+import Notification from '../models/Notification';
 import { admin, protect } from '../middleware/authMiddleware';
 import upload from '../middleware/uploadMiddleware';
 import asyncHandler from '../utils/asyncHandler';
+import { emitOrderUpdate, emitToUser } from '../services/realtimeService';
 import { sendTelegramMessage } from '../utils/sendTelegramMessage';
 import { normalizeCategorySlug } from '../utils/category';
 import { uploadFilesToCloudinary, type LocalUploadFile } from '../utils/cloudinaryUploads';
@@ -195,9 +197,44 @@ router.get(
 
 router.get(
   '/orders',
-  asyncHandler(async (_req, res) => {
-    const orders = await Order.find().sort({ createdAt: -1 }).populate('user', 'name email');
-    res.json(orders);
+  asyncHandler(async (req, res) => {
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const pageSize = Math.min(Math.max(Number(req.query.pageSize) || 10, 1), 50);
+    const status = String(req.query.status || '').trim().toLowerCase();
+    const search = String(req.query.search || '').trim();
+    const sortBy = String(req.query.sortBy || 'createdAt');
+    const sortOrder = String(req.query.sortOrder || 'desc') === 'asc' ? 1 : -1;
+
+    const filter: Record<string, unknown> = {};
+    if (status) {
+      filter.status = status;
+    }
+    if (search) {
+      filter.$or = [
+        { orderId: { $regex: search, $options: 'i' } },
+        { 'shippingAddress.address': { $regex: search, $options: 'i' } },
+        { 'shippingAddress.city': { $regex: search, $options: 'i' } },
+        { 'shippingAddress.postalCode': { $regex: search, $options: 'i' } },
+        { 'shippingAddress.country': { $regex: search, $options: 'i' } },
+        { paymentMethod: { $regex: search, $options: 'i' } },
+        { 'paymentResult.id': { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const total = await Order.countDocuments(filter);
+    const orders = await Order.find(filter)
+      .sort({ [sortBy]: sortOrder })
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .populate('user', 'name email');
+
+    res.json({
+      orders,
+      total,
+      page,
+      pages: Math.ceil(total / pageSize),
+      pageSize,
+    });
   })
 );
 
@@ -209,6 +246,57 @@ router.get(
       res.status(404);
       throw new Error('Order not found');
     }
+    res.json(order);
+  })
+);
+
+router.patch(
+  '/orders/:id/status',
+  asyncHandler(async (req, res) => {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      res.status(404);
+      throw new Error('Order not found');
+    }
+
+    const requestedStatus = String(req.body.status || order.status).trim().toLowerCase();
+    const trackingNumber = typeof req.body.trackingNumber === 'string' ? req.body.trackingNumber.trim() : order.trackingNumber;
+    const orderNotes = typeof req.body.orderNotes === 'string' ? req.body.orderNotes.trim() : order.orderNotes;
+    const message = typeof req.body.message === 'string' ? req.body.message.trim() : `Order status updated to ${requestedStatus}`;
+
+    order.status = requestedStatus as typeof order.status;
+    if (trackingNumber) {
+      order.trackingNumber = trackingNumber;
+    }
+    if (orderNotes) {
+      order.orderNotes = orderNotes;
+    }
+    if (requestedStatus === 'delivered') {
+      order.isDelivered = true;
+      order.deliveredAt = new Date();
+    }
+
+    order.trackingEvents.push({
+      status: requestedStatus,
+      message,
+      timestamp: new Date(),
+    });
+
+    await order.save();
+
+    const userId = String((order.user as any)?._id || order.user || '');
+    if (userId) {
+      const notification = await Notification.create({
+        user: order.user as any,
+        title: 'Order status updated',
+        message,
+        type: 'order',
+        data: { orderId: order.orderId, status: order.status },
+      });
+      emitToUser(userId, 'notification', notification);
+      emitOrderUpdate(order.orderId, userId, { orderId: order.orderId, status: order.status, trackingEvents: order.trackingEvents });
+    }
+
     res.json(order);
   })
 );

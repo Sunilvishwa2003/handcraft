@@ -9,6 +9,7 @@ export type ProductCategory = {
 export type Product = {
   _id: string;
   name: string;
+  sku?: string;
   description: string;
   price: number;
   originalPrice?: number;
@@ -106,6 +107,7 @@ export type OrderStatus =
 
 export type Order = {
   _id: string;
+  orderId: string;
   user?: {
     _id?: string;
     name?: string;
@@ -119,6 +121,15 @@ export type Order = {
     country: string;
     phone?: string;
   };
+  billingAddress?: {
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+    phone?: string;
+  };
+  orderNotes?: string;
+  trackingNumber?: string;
   shippingOption: ShippingOption;
   estimatedDelivery?: string;
   paymentMethod: string;

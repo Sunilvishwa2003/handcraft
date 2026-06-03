@@ -3,6 +3,7 @@ import mongoose, { CallbackWithoutResultAndOptionalError, Document, Schema } fro
 export interface IProduct extends Document {
   name: string;
   slug?: string;
+  sku?: string;
   description: string;
   shortDescription?: string;
   price: number;
@@ -118,6 +119,7 @@ const productSchema = new Schema<IProduct>(
     category: { type: String, required: true },
     subcategory: { type: String },
     slug: { type: String, trim: true, lowercase: true, index: true },
+    sku: { type: String, trim: true, uppercase: true, index: true },
     status: { type: String, enum: ['active', 'inactive', 'draft'], default: 'active', index: true },
     keywords: { type: [String], default: [], index: true },
     shortDescription: { type: String, trim: true },

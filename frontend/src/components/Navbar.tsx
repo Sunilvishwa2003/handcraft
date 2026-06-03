@@ -4,7 +4,7 @@ import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, LogIn, UserRound } from 'lucide-react';
-import { apiFetch, getApiUrl, getGuestCart } from '@/lib/api';
+import { apiFetch, getApiUrl, getGuestCart, getProductPrimaryImageUrl } from '@/lib/api';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import useMenu from '@/hooks/useMenu';
 import { isAdmin as isAdminEmail } from '@/lib/isAdmin';
@@ -18,7 +18,7 @@ const NAVBAR_LOGO_FALLBACK = '/mahabs-logo.svg';
 export default function Navbar() {
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<Array<{ _id: string; name: string; brand: string; category: string; vendorName?: string }>>([]);
+  const [suggestions, setSuggestions] = useState<Array<{ _id: string; name: string; brand: string; category: string; vendorName?: string; image?: string; price?: number; countInStock?: number }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionTimer = useRef<number | null>(null);
   const [cartCount, setCartCount] = useState(0);
@@ -29,7 +29,7 @@ export default function Navbar() {
   const userIsAdmin = isAdminEmail(user?.email);
   const menuQuery = useMenu();
   const categories = useMemo(() => {
-    const source = menuQuery.isLoading ? [] : menuQuery.data?.length ? menuQuery.data : storefrontFeaturedCategories;
+    const source = menuQuery.data?.length ? menuQuery.data : storefrontFeaturedCategories;
     const map = new Map<string, string>();
 
     source.forEach((category) => {
@@ -41,7 +41,7 @@ export default function Navbar() {
     });
 
     return Array.from(map.values());
-  }, [menuQuery.data, menuQuery.isLoading]);
+  }, [menuQuery.data]);
 
   useEffect(() => {
     let mounted = true;
@@ -95,7 +95,7 @@ export default function Navbar() {
       } catch {
         setSuggestions([]);
       }
-    }, 250);
+    }, 350);
 
     return () => {
       if (suggestionTimer.current) {
@@ -190,11 +190,19 @@ export default function Navbar() {
                         }}
                         className="w-full rounded-xl px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-sky-50"
                       >
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={getProductPrimaryImageUrl({ image: suggestion.image, images: suggestion.image ? [suggestion.image] : [] })}
+                            alt={suggestion.name}
+                            className="h-12 w-12 rounded-lg object-cover border border-slate-200 bg-slate-50"
+                          />
                           <div className="min-w-0">
                             <div className="truncate font-semibold text-slate-900">{suggestion.name}</div>
                             <div className="mt-0.5 text-xs text-slate-500 truncate">
                               {suggestion.brand} · {suggestion.category}
+                            </div>
+                            <div className="mt-1 text-xs text-slate-500">
+                              {suggestion.countInStock && suggestion.countInStock > 0 ? 'In stock' : 'Out of stock'}
                             </div>
                           </div>
                         </div>
@@ -316,8 +324,17 @@ export default function Navbar() {
                     onMouseDown={() => router.push(`/products/${suggestion._id}`)}
                     className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-sky-50"
                   >
-                    <div className="truncate font-semibold text-slate-900">{suggestion.name}</div>
-                    <div className="text-xs text-slate-500">{suggestion.brand}</div>
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={getProductPrimaryImageUrl({ image: suggestion.image, images: suggestion.image ? [suggestion.image] : [] })}
+                        alt={suggestion.name}
+                        className="h-10 w-10 rounded-lg object-cover border border-slate-200 bg-slate-50"
+                      />
+                      <div className="min-w-0">
+                        <div className="truncate font-semibold text-slate-900">{suggestion.name}</div>
+                        <div className="text-xs text-slate-500">{suggestion.brand}</div>
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -327,11 +344,7 @@ export default function Navbar() {
 
         {/* Category Navigation - Horizontal Scroll on Mobile */}
         <div className="flex flex-wrap items-center gap-2 px-2 pb-2 pt-1">
-          {menuQuery.isLoading ? (
-            [1, 2, 3, 4].map((index) => (
-              <div key={index} className="h-8 min-w-[6rem] rounded-full bg-slate-200 animate-pulse" />
-            ))
-          ) : categories.length ? (
+          {categories.length ? (
             categories.map((cat) => (
               <Link
                 key={cat}

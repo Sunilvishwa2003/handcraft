@@ -17,6 +17,13 @@ import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
 
+const MENU_CACHE_TTL_MS = 1000 * 60 * 10;
+let menuCache: { categories: string[]; expiresAt: number } | null = null;
+
+const clearMenuCache = () => {
+  menuCache = null;
+};
+
 // Validate :id params early to prevent CastError when id is missing/invalid
 router.param('id', validateObjectId('id'));
 
@@ -98,9 +105,19 @@ const normalizeCustomizationOptions = (value: unknown) => {
 };
 
 const synonymMap: Record<string, string[]> = {
-  ganesh: ['ganesha', 'vinayagar', 'vinayaka', 'pillayar'],
-  murugan: ['subramanya', 'karthikeya'],
-  shiva: ['sivan', 'mahadev'],
+  ganesh: ['ganesha', 'vinayagar', 'vinayaka', 'pillayar', 'pillaiyar', 'ganapathi', 'ganapati', 'lord ganesha'],
+  ganesha: ['ganesh', 'vinayagar', 'vinayaka', 'pillayar', 'pillaiyar', 'ganapathi', 'ganapati'],
+  vinayagar: ['ganesh', 'ganesha', 'vinayaka', 'pillayar', 'pillaiyar', 'ganapathi', 'ganapati'],
+  ganapathi: ['ganesh', 'ganesha', 'vinayagar', 'vinayaka', 'pillayar', 'pillaiyar', 'ganapati'],
+  ganapati: ['ganesh', 'ganesha', 'vinayagar', 'vinayaka', 'pillayar', 'pillaiyar', 'ganapathi'],
+  pillaiyar: ['ganesh', 'ganesha', 'vinayagar', 'vinayaka', 'ganapathi', 'ganapati', 'pillayar'],
+  murugan: ['subramanya', 'karthikeya', 'kartikeya', 'skanda'],
+  kartikeya: ['murugan', 'subramanya', 'karthikeya', 'skanda'],
+  karthikeya: ['murugan', 'subramanya', 'kartikeya', 'skanda'],
+  subramanya: ['murugan', 'karthikeya', 'kartikeya', 'skanda'],
+  shiva: ['sivan', 'mahadev', 'shankar'],
+  mahadev: ['shiva', 'sivan', 'shankar'],
+  shankar: ['shiva', 'sivan', 'mahadev'],
 };
 
 const tokenizeSearchTerms = (value: string) =>
@@ -123,6 +140,60 @@ const buildSearchRegexes = (query: string) => {
   });
 
   return Array.from(keywords).map((keyword) => new RegExp(keyword.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&'), 'i'));
+};
+
+const buildSearchTerms = (query: string) => {
+  const normalizedQuery = query.trim().toLowerCase();
+  const tokens = tokenizeSearchTerms(query);
+  const keywords = new Set<string>(tokens);
+
+  if (normalizedQuery) {
+    keywords.add(normalizedQuery);
+  }
+
+  tokens.forEach((token) => {
+    const synonyms = synonymMap[token];
+    if (Array.isArray(synonyms)) {
+      synonyms.forEach((synonym) => keywords.add(synonym.toLowerCase()));
+    }
+  });
+
+  return Array.from(keywords).filter(Boolean);
+};
+
+const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const buildSearchClauses = (query: string) => {
+  const terms = buildSearchTerms(query);
+  const regexes = terms.map((term) => new RegExp(escapeRegex(term), 'i'));
+
+  return [
+    { name: { $in: regexes } },
+    { slug: { $in: regexes } },
+    { sku: { $in: regexes } },
+    { category: { $in: regexes } },
+    { subcategory: { $in: regexes } },
+    { brand: { $in: regexes } },
+    { tags: { $in: regexes } },
+    { keywords: { $in: regexes } },
+    { semanticKeywords: { $in: regexes } },
+    { description: { $in: regexes } },
+    { shortDescription: { $in: regexes } },
+  ];
+};
+
+const mergeSearchKeywords = (payload: Record<string, unknown>) => {
+  const combined = [
+    ...normalizeStringArray(payload.tags),
+    ...normalizeStringArray(payload.keywords),
+    ...normalizeStringArray(payload.semanticKeywords),
+  ]
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+
+  payload.tags = Array.from(new Set(combined));
+  payload.keywords = Array.from(new Set(combined));
+  payload.semanticKeywords = Array.from(new Set(combined));
 };
 
 const getUploadedImageUrls = async (req: express.Request, context: string) => {
@@ -155,6 +226,10 @@ const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUr
 
   if (input.name !== undefined) {
     payload.name = String(input.name || '').trim();
+  }
+
+  if (input.sku !== undefined) {
+    payload.sku = input.sku ? String(input.sku).trim().toUpperCase() : undefined;
   }
 
   if (input.brand !== undefined) {
@@ -255,6 +330,8 @@ const normalizeProductPayload = (input: Record<string, unknown>, uploadedImageUr
     payload.semanticKeywords = normalizeStringArray(input.semanticKeywords);
   }
 
+  mergeSearchKeywords(payload);
+
   if (input.vendorName !== undefined) {
     payload.vendorName = String(input.vendorName || '').trim();
   }
@@ -350,16 +427,7 @@ router.get(
 
     let products = await Product.find(filter).lean();
     if (q) {
-      const regexes = buildSearchRegexes(q);
-      const searchConditions = [
-        { name: { $in: regexes } },
-        { category: { $in: regexes } },
-        { subcategory: { $in: regexes } },
-        { brand: { $in: regexes } },
-        { tags: { $in: regexes } },
-        { description: { $in: regexes } },
-        { semanticKeywords: { $in: regexes } },
-      ];
+      const searchConditions = buildSearchClauses(q);
 
       const query: any = { $and: [{ $or: searchConditions }] };
       if (Object.keys(filter).length) {
@@ -431,7 +499,27 @@ router.get(
 router.get(
   '/menu',
   asyncHandler(async (_req, res) => {
-    const categories = await Product.distinct('category');
+    const now = Date.now();
+
+    if (menuCache && menuCache.expiresAt > now) {
+      res.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=1800');
+      return res.json({
+        success: true,
+        data: menuCache.categories,
+      });
+    }
+
+    const categories = (await Product.distinct('category'))
+      .map((category) => String(category || '').trim())
+      .filter(Boolean)
+      .sort((left, right) => left.localeCompare(right));
+
+    menuCache = {
+      categories,
+      expiresAt: now + MENU_CACHE_TTL_MS,
+    };
+
+    res.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=1800');
     res.json({
       success: true,
       data: categories,
@@ -478,6 +566,9 @@ router.get(
         brand: product.brand,
         category: product.category,
         vendorName: product.vendorName,
+        image: getProductPrimaryImage(product),
+        price: product.price,
+        countInStock: product.countInStock,
       })),
     });
   })
@@ -494,19 +585,8 @@ router.get(
       return res.json({ success: true, count: 0, products: [] });
     }
 
-    const regexes = buildSearchRegexes(q);
-
     const query = {
-      $or: [
-        { name: { $in: regexes } },
-        { slug: { $in: regexes } },
-        { category: { $in: regexes } },
-        { subcategory: { $in: regexes } },
-        { tags: { $in: regexes } },
-        { keywords: { $in: regexes } },
-        { description: { $in: regexes } },
-        { semanticKeywords: { $in: regexes } },
-      ],
+      $or: buildSearchClauses(q),
     } as any;
 
     let products = await Product.find(query).sort({ trendingScore: -1, rating: -1 }).lean();
@@ -671,6 +751,7 @@ router.post(
       const uploadedImageUrls = await getUploadedImageUrls(req, `product-create:${String(req.body.name || 'unknown-product')}`);
       const payload = normalizeProductPayload(req.body, uploadedImageUrls);
       const product = await Product.create(payload);
+      clearMenuCache();
       res.status(201).json(product);
     } catch (err) {
       console.error('PRODUCT CREATE ERROR:', err instanceof Error ? err.stack || err.message : err);
@@ -707,6 +788,7 @@ router.put(
         res.status(404);
         throw new Error('Product not found');
       }
+      clearMenuCache();
       res.json(product);
     } catch (err) {
       console.error('PRODUCT UPDATE ERROR:', err instanceof Error ? err.stack || err.message : err);
@@ -735,6 +817,7 @@ router.delete(
       res.status(404);
       throw new Error('Product not found');
     }
+    clearMenuCache();
     res.json({ message: 'Product deleted' });
   })
 );

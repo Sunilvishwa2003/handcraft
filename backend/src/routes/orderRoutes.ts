@@ -15,7 +15,9 @@ import {
 } from '../services/orderCheckoutService';
 import { emitOrderUpdate, emitToUser } from '../services/realtimeService';
 import { buildOrderTelegramMessage } from '../utils/buildOrderTelegramMessage';
+import { buildOrderWhatsAppMessage } from '../utils/buildOrderWhatsAppMessage';
 import { sendTelegramMessage } from '../utils/sendTelegramMessage';
+import { sendWhatsAppMessage } from '../utils/sendWhatsAppMessage';
 import validateObjectId from '../middleware/validateObjectId';
 
 const router = express.Router();
@@ -91,6 +93,16 @@ router.post(
         country: String(shippingAddress.country).trim(),
         phone: String(shippingAddress.phone || '').trim(),
       },
+      billingAddress: req.body.billingAddress
+        ? {
+            address: String(req.body.billingAddress.address || '').trim(),
+            city: String(req.body.billingAddress.city || '').trim(),
+            postalCode: String(req.body.billingAddress.postalCode || '').trim(),
+            country: String(req.body.billingAddress.country || '').trim(),
+            phone: String(req.body.billingAddress.phone || '').trim(),
+          }
+        : undefined,
+      orderNotes: typeof req.body.orderNotes === 'string' ? req.body.orderNotes.trim() : undefined,
       shippingOption,
       paymentMethod,
       paymentResult: req.body.paymentResult || undefined,
@@ -113,6 +125,27 @@ router.post(
       await sendTelegramMessage(message);
     } catch (error) {
       console.error(`[telegram] Failed to send order notification for order ${order._id}:`, error);
+    }
+
+    try {
+      const adminPhone = String(process.env.WHATSAPP_ADMIN_PHONE_NUMBER || '').trim();
+      if (adminPhone) {
+        const message = buildOrderWhatsAppMessage({
+          orderId: order.orderId,
+          customerName: user?.name || 'Guest',
+          phoneNumber: order.shippingAddress.phone,
+          paymentStatus: order.isPaid ? 'Paid' : 'Pending',
+          paymentMethod: order.paymentMethod,
+          totalPrice: order.totalPrice,
+          shippingAddress: order.shippingAddress,
+          orderItems: order.orderItems.map((item) => ({ name: item.name, qty: item.qty, price: item.price })),
+          orderNotes: order.orderNotes,
+          trackingNumber: order.trackingNumber,
+        });
+        await sendWhatsAppMessage({ to: adminPhone, body: message });
+      }
+    } catch (error) {
+      console.error(`[whatsapp] Failed to send order notification for order ${order._id}:`, error);
     }
 
     res.status(201).json(order);

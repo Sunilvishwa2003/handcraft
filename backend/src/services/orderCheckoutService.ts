@@ -9,6 +9,7 @@ import { detectFraud } from './mlService';
 import { emitOrderUpdate, emitToUser } from './realtimeService';
 import { calculateOrderTotals, roundMoney, ShippingOption } from '../utils/pricing';
 import { getProductPrimaryImage } from '../utils/productImage';
+import { generateOrderId } from '../utils/generateOrderId';
 
 type RawOrderItem = {
   product?: string;
@@ -137,6 +138,8 @@ export const prepareCheckoutDetails = async ({
 export const createOrderFromCheckout = async ({
   user,
   shippingAddress,
+  billingAddress,
+  orderNotes,
   shippingOption,
   paymentMethod,
   paymentResult,
@@ -146,6 +149,8 @@ export const createOrderFromCheckout = async ({
 }: {
   user: CheckoutUser;
   shippingAddress: ShippingAddressPayload;
+  billingAddress?: ShippingAddressPayload;
+  orderNotes?: string;
   shippingOption: ShippingOption;
   paymentMethod: string;
   paymentResult?: PaymentResultPayload;
@@ -158,9 +163,12 @@ export const createOrderFromCheckout = async ({
   const isPaid = paymentMethod !== 'cod';
   const placedAt = new Date();
   const order = (await Order.create({
+    orderId: generateOrderId(),
     user: userRef,
     orderItems,
     shippingAddress,
+    billingAddress: billingAddress || shippingAddress,
+    orderNotes: orderNotes?.trim() || undefined,
     shippingOption,
     paymentMethod,
     paymentResult: paymentResult || undefined,
@@ -171,12 +179,12 @@ export const createOrderFromCheckout = async ({
     totalPrice: totals.totalPrice,
     isPaid,
     paidAt: isPaid ? placedAt : undefined,
-    status: fraud.decision === 'review' ? 'placed' : isPaid ? 'confirmed' : 'placed',
+    status: fraud.decision === 'review' ? 'pending' : isPaid ? 'processing' : 'pending',
     fraudRiskScore: fraud.score,
     fraudFlags: fraud.flags,
     trackingEvents: [
       {
-        status: 'placed',
+        status: fraud.decision === 'review' ? 'pending' : 'processing',
         message: fraud.decision === 'review' ? 'Order placed and queued for review' : 'Order placed successfully',
         timestamp: placedAt,
       },
