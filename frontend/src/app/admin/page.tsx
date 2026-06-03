@@ -347,6 +347,7 @@ export default function AdminPage() {
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<AdminSection>("overview");
   const [productForm, setProductForm] = useState<ProductFormState>(createEmptyProductForm());
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -368,6 +369,7 @@ export default function AdminPage() {
   const [projectBoardFilter, setProjectBoardFilter] = useState<ProjectBoardFilter>("all");
 
   const load = async () => {
+    setErrorMessage(null);
     const user = getStoredUser();
     if (!user?.isAdmin) {
       setNotice({ tone: "error", text: "Login with an admin account to manage products, orders, custom projects, and storefront assets." });
@@ -390,10 +392,19 @@ export default function AdminPage() {
     const adList = sortByNewest(adResult.status === "fulfilled" ? adResult.value : []);
     const groupedProducts = groupedResult.status === "fulfilled" ? groupedResult.value.groups : [];
 
+    console.debug("[admin/page] fetch results", {
+      dashboard: dashboardResult.status === "fulfilled" ? dashboardResult.value : dashboardResult.reason || null,
+      products: productResult.status === "fulfilled" ? productResult.value.length : `ERROR: ${String(productResult.reason)}`,
+      orders: orderResult.status === "fulfilled" ? orderResult.value.length : `ERROR: ${String(orderResult.reason)}`,
+      customProjects: customProjectResult.status === "fulfilled" ? customProjectResult.value.length : `ERROR: ${String(customProjectResult.reason)}`,
+      ads: adResult.status === "fulfilled" ? adResult.value.length : `ERROR: ${String(adResult.reason)}`,
+      groupedProducts: groupedProducts.length,
+    });
+
     const fallbackDashboard: Dashboard = {
       metrics: {
         orders: orderList.length,
-        users: dashboardResult.status === "fulfilled" ? dashboardResult.value.metrics.users : 0,
+        users: dashboardResult.status === "fulfilled" ? dashboardResult.value?.metrics?.users ?? 0 : 0,
         products: productList.length,
         revenue: orderList.reduce((sum, order) => sum + (order.isPaid ? order.totalPrice : 0), 0),
       },
@@ -401,7 +412,12 @@ export default function AdminPage() {
       recentOrders: orderList.slice(0, 10),
     };
 
-    setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : fallbackDashboard);
+    const dashboardPayload =
+      dashboardResult.status === "fulfilled" && dashboardResult.value?.metrics
+        ? dashboardResult.value
+        : fallbackDashboard;
+
+    setDashboard(dashboardPayload);
     setProducts(productList);
     setOrders(orderList);
     setCustomProjects(customProjectList);
@@ -425,6 +441,7 @@ export default function AdminPage() {
         tone: "info",
         text: "Some admin modules could not be loaded completely, so the dashboard is using the data that is currently available.",
       });
+      setErrorMessage("One or more admin API requests failed. See browser console for details.");
     }
 
     setLoading(false);
@@ -444,6 +461,7 @@ export default function AdminPage() {
       await load();
       setNotice({ tone: "success", text: "Admin data refreshed from the live project." });
     } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Could not refresh admin data");
       setNotice({ tone: "error", text: error instanceof Error ? error.message : "Could not refresh admin data" });
     } finally {
       setRefreshing(false);
@@ -1051,6 +1069,11 @@ const saveAd = async (event: FormEvent) => {
           </div>
 
           {notice ? <div className={`mt-4 rounded-md p-3 text-sm ${noticeStyles[notice.tone]}`}>{notice.text}</div> : null}
+          {errorMessage ? (
+            <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-900">
+              <strong>Admin load issue:</strong> {errorMessage}
+            </div>
+          ) : null}
 
           <div className="mt-5 flex flex-wrap gap-2">
             {sectionButtons.map((section) => (

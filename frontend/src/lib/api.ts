@@ -28,6 +28,12 @@ export const getApiUrl = () => {
     return trimTrailingSlash(configured);
   }
 
+  if (typeof window !== 'undefined' && !['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname)) {
+    const fallbackUrl = `${window.location.origin}${DEFAULT_API_PATH}`;
+    console.warn('[apiFetch] NEXT_PUBLIC_API_URL is not configured. Falling back to same-origin API:', fallbackUrl);
+    return fallbackUrl;
+  }
+
   const browserOrigin = getBrowserBackendOrigin();
   if (browserOrigin) {
     return `${browserOrigin}${DEFAULT_API_PATH}`;

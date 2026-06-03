@@ -128,7 +128,7 @@ router.get(
       Order.find().sort({ createdAt: -1 }).limit(10).populate('user', 'name email'),
     ]);
 
-    res.json({
+    const responsePayload = {
       metrics: {
         orders,
         users,
@@ -137,7 +137,15 @@ router.get(
       },
       lowStock,
       recentOrders,
+    };
+
+    console.log('[admin/dashboard] response payload', {
+      metrics: responsePayload.metrics,
+      lowStock: responsePayload.lowStock.length,
+      recentOrders: responsePayload.recentOrders.length,
     });
+
+    res.json(responsePayload);
   })
 );
 
