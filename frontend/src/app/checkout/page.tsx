@@ -532,7 +532,7 @@ function CheckoutPageContent() {
             <h2 className="text-lg font-bold text-gray-950">Order Summary</h2>
             
             {/* Cart Items */}
-            <div className="mt-4 space-y-3 xl:max-h-[26rem] xl:overflow-y-auto xl:pr-1">
+            <div className="mt-4 space-y-3 xl:max-h-104 xl:overflow-y-auto xl:pr-1">
               {cart?.items.map((item) => (
                 <div key={item.product} className="flex items-start gap-3 text-sm">
                   <img
@@ -555,7 +555,7 @@ function CheckoutPageContent() {
                         >
                           −
                         </button>
-                        <span className="min-w-[2rem] text-center text-xs font-semibold text-gray-700">{item.qty}</span>
+                        <span className="min-w-8 text-center text-xs font-semibold text-gray-700">{item.qty}</span>
                         <button
                           type="button"
                           onClick={() => void updateQty(item.product, item.qty + 1)}

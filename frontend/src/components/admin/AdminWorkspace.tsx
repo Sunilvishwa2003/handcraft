@@ -183,18 +183,18 @@ export function AdminWorkspace() {
 
   if (!isAuthorized) {
     return (
-      <div className="admin-shell flex min-h-screen items-center justify-center px-4 py-10 text-[var(--admin-foreground)]">
+      <div className="admin-shell flex min-h-screen items-center justify-center px-4 py-10 text-(--admin-foreground)">
         <Card className="max-w-2xl p-8">
           <Badge tone="gold">Protected Atelier Console</Badge>
           <CardHeader className="mt-4 px-0">
-            <CardTitle className="font-[var(--font-display)] text-4xl">Admin access is required</CardTitle>
+            <CardTitle className="font-(--font-display) text-4xl">Admin access is required</CardTitle>
             <CardDescription className="max-w-xl text-base">
               This premium operations layer is reserved for MahabsCrafto staff roles. Sign in with an admin account to open live order workflows, artisan coordination, finance, CRM, and custom project controls.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 px-0 pt-3 sm:grid-cols-3">
             {["Realtime order orchestration", "Customization studio approvals", "Finance, CRM, and role-based governance"].map((item) => (
-              <div key={item} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--admin-muted)]">
+              <div key={item} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm text-(--admin-muted)">
                 {item}
               </div>
             ))}
@@ -218,7 +218,7 @@ export function AdminWorkspace() {
   const customOpen = activeSnapshot.customQueue.length;
 
   return (
-    <div className="admin-shell min-h-screen text-[var(--admin-foreground)]">
+    <div className="admin-shell min-h-screen text-(--admin-foreground)">
       <div className="pointer-events-none fixed inset-0 opacity-70">
         <div className="admin-mesh absolute inset-0" />
       </div>
@@ -237,7 +237,7 @@ export function AdminWorkspace() {
         onToggleTheme={toggleTheme}
       />
 
-      <div className="relative mx-auto flex min-h-screen max-w-[1700px] gap-4 px-3 py-4 sm:px-5 lg:px-6">
+      <div className="relative mx-auto flex min-h-screen max-w-425 gap-4 px-3 py-4 sm:px-5 lg:px-6">
         <DesktopSidebar navItems={activeSnapshot.navItems} collapsed={sidebarCollapsed} onToggleSidebar={toggleSidebar} />
 
         <AnimatePresence>
@@ -251,10 +251,10 @@ export function AdminWorkspace() {
               >
                 <div className="mb-6 flex items-center justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.28em] text-[var(--admin-gold)]">MahabsCrafto ERP</p>
-                    <h2 className="mt-2 font-[var(--font-display)] text-2xl">Studio navigation</h2>
+                    <p className="text-xs uppercase tracking-[0.28em] text-(--admin-gold)">MahabsCrafto ERP</p>
+                    <h2 className="mt-2 font-(--font-display) text-2xl">Studio navigation</h2>
                   </div>
-                  <button onClick={() => setMobileNavOpen(false)} className="rounded-full border border-white/10 p-2 text-[var(--admin-muted)]">
+                  <button onClick={() => setMobileNavOpen(false)} className="rounded-full border border-white/10 p-2 text-(--admin-muted)">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -268,18 +268,18 @@ export function AdminWorkspace() {
           <header className="admin-glass sticky top-4 z-30 mb-5 rounded-[28px] border px-4 py-4 sm:px-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-3">
-                <button onClick={() => setMobileNavOpen(true)} className="rounded-full border border-white/10 p-2 text-[var(--admin-muted)] md:hidden">
+                <button onClick={() => setMobileNavOpen(true)} className="rounded-full border border-white/10 p-2 text-(--admin-muted) md:hidden">
                   <Menu className="h-5 w-5" />
                 </button>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--admin-gold)]">Luxury artisan operations</p>
-                  <h1 className="font-[var(--font-display)] text-3xl sm:text-4xl">Atelier Control Board</h1>
+                  <p className="text-xs uppercase tracking-[0.24em] text-(--admin-gold)">Luxury artisan operations</p>
+                  <h1 className="font-(--font-display) text-3xl sm:text-4xl">Atelier Control Board</h1>
                 </div>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative min-w-[280px]">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--admin-muted)]" />
+                <div className="relative min-w-70">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-(--admin-muted)" />
                   <Input value={globalSearch} onChange={(event) => setGlobalSearch(event.target.value)} placeholder="Search everywhere..." className="pl-11" />
                 </div>
                 <div className="flex items-center gap-2">
@@ -311,10 +311,10 @@ export function AdminWorkspace() {
                     <div className="relative grid gap-8 p-6 lg:grid-cols-[1.2fr_0.8fr]">
                       <div>
                         <Badge tone="gold">Crafted for luxury artisan brands</Badge>
-                        <h2 className="mt-4 max-w-3xl font-[var(--font-display)] text-4xl leading-tight sm:text-5xl">
+                        <h2 className="mt-4 max-w-3xl font-(--font-display) text-4xl leading-tight sm:text-5xl">
                           MahabsCrafto Atelier OS blends Shopify speed, Etsy storytelling, ERP depth, and CRM precision.
                         </h2>
-                        <p className="mt-4 max-w-2xl text-sm leading-7 text-[var(--admin-muted)] sm:text-base">
+                        <p className="mt-4 max-w-2xl text-sm leading-7 text-(--admin-muted) sm:text-base">
                           Built on your existing Next.js and Express stack, this foundation gives you a premium overview dashboard today and maps every requested module into a production-ready operating system for statues, décor, and bespoke artisan work.
                         </p>
                         <div className="mt-6 flex flex-wrap gap-3">
@@ -329,7 +329,7 @@ export function AdminWorkspace() {
                         </div>
                         <div className="mt-6 flex flex-wrap gap-2">
                           {activeSnapshot.blueprintPillars.map((pillar) => (
-                            <span key={pillar} className="rounded-full border border-white/8 bg-white/6 px-3 py-1 text-xs text-[var(--admin-muted)]">
+                            <span key={pillar} className="rounded-full border border-white/8 bg-white/6 px-3 py-1 text-xs text-(--admin-muted)">
                               {pillar}
                             </span>
                           ))}
@@ -350,7 +350,7 @@ export function AdminWorkspace() {
                 <Card className="h-full">
                   <CardHeader>
                     <Badge tone="sky">Customer experience</Badge>
-                    <CardTitle className="font-[var(--font-display)] text-3xl">Crafting Progress Story</CardTitle>
+                    <CardTitle className="font-(--font-display) text-3xl">Crafting Progress Story</CardTitle>
                     <CardDescription>Give buyers an emotional, visual timeline for premium commissions and temple pieces.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -360,8 +360,8 @@ export function AdminWorkspace() {
                       "Next milestone: QC photos and dispatch confirmation to WhatsApp.",
                     ].map((line, index) => (
                       <div key={line} className="rounded-3xl border border-white/8 bg-white/6 p-4">
-                        <p className="text-xs uppercase tracking-[0.22em] text-[var(--admin-gold)]">Stage {index + 1}</p>
-                        <p className="mt-2 text-sm leading-6 text-[var(--admin-foreground)]">{line}</p>
+                        <p className="text-xs uppercase tracking-[0.22em] text-(--admin-gold)">Stage {index + 1}</p>
+                        <p className="mt-2 text-sm leading-6 text-(--admin-foreground)">{line}</p>
                       </div>
                     ))}
                   </CardContent>
@@ -376,12 +376,12 @@ export function AdminWorkspace() {
                     <CardHeader className="gap-3">
                       <div className="flex items-center justify-between">
                         <Badge tone={metric.tone}>{metric.label}</Badge>
-                        <ArrowUpRight className="h-4 w-4 text-[var(--admin-muted)]" />
+                        <ArrowUpRight className="h-4 w-4 text-(--admin-muted)" />
                       </div>
                       <CardTitle className="text-3xl">{metric.value}</CardTitle>
                       <CardDescription>{metric.description}</CardDescription>
                     </CardHeader>
-                    <CardContent className="pt-2 text-sm font-medium text-[var(--admin-gold)]">{metric.change}</CardContent>
+                    <CardContent className="pt-2 text-sm font-medium text-(--admin-gold)">{metric.change}</CardContent>
                   </Card>
                 </motion.div>
               ))}
@@ -391,7 +391,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="gold">Revenue graph</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Sales velocity and monthly performance</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Sales velocity and monthly performance</CardTitle>
                   <CardDescription>Realtime sales collections across storefront and customization-driven artisan work.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -402,7 +402,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="stone">Order mix</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Status breakdown</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Status breakdown</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
                   <StatusPieChart data={activeSnapshot.statusBreakdown} />
@@ -425,7 +425,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="sky">Conversion analytics</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Acquisition funnel</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Acquisition funnel</CardTitle>
                   <CardDescription>From customization inquiry to delivered heirloom.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -436,7 +436,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="emerald">Channel mix</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Sales channel pulse</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Sales channel pulse</CardTitle>
                   <CardDescription>Balance prepaid, COD, WhatsApp-assisted, and repeat customer orders.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -447,7 +447,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="gold">Heatmap</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Order heatmap</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Order heatmap</CardTitle>
                   <CardDescription>Recent order concentration across a four-week operating rhythm.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -460,7 +460,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="sky">Order workflow</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">From order to temple-ready delivery</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">From order to temple-ready delivery</CardTitle>
                   <CardDescription>The artisan-aware workflow you requested, layered onto the current backend order and custom project data.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -474,9 +474,9 @@ export function AdminWorkspace() {
                         viewport={{ once: true }}
                         transition={{ delay: index * 0.03 }}
                       >
-                        <p className="text-xs uppercase tracking-[0.22em] text-[var(--admin-gold)]">Step {index + 1}</p>
+                        <p className="text-xs uppercase tracking-[0.22em] text-(--admin-gold)">Step {index + 1}</p>
                         <p className="mt-3 text-base font-semibold">{step.label}</p>
-                        <p className="mt-2 text-sm text-[var(--admin-muted)]">{step.count} active items</p>
+                        <p className="mt-2 text-sm text-(--admin-muted)">{step.count} active items</p>
                       </motion.div>
                     ))}
                   </div>
@@ -486,7 +486,7 @@ export function AdminWorkspace() {
               <Card id="inventory">
                 <CardHeader>
                   <Badge tone="rose">Low stock alerts</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Material watchlist</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Material watchlist</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {activeSnapshot.lowStock.map((item) => (
@@ -494,13 +494,13 @@ export function AdminWorkspace() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold">{item.name}</p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">
+                          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-(--admin-muted)">
                             {item.category} • {item.sku}
                           </p>
                         </div>
                         <TriangleAlert className="h-5 w-5 text-rose-300" />
                       </div>
-                      <p className="mt-3 text-sm text-[var(--admin-muted)]">
+                      <p className="mt-3 text-sm text-(--admin-muted)">
                         Stock {item.stock} / threshold {item.threshold}
                       </p>
                     </div>
@@ -513,7 +513,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="gold">Customization management</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Custom project studio</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Custom project studio</CardTitle>
                   <CardDescription>Manage reference uploads, approvals, revisions, quotations, materials, and artisan updates in one premium workspace.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -524,10 +524,10 @@ export function AdminWorkspace() {
                           <p className="font-semibold">{item.customer}</p>
                           <Badge tone="stone">{item.material}</Badge>
                         </div>
-                        <p className="mt-2 text-sm text-[var(--admin-muted)]">
+                        <p className="mt-2 text-sm text-(--admin-muted)">
                           {item.stage} • {item.approval}
                         </p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[var(--admin-gold)]">
+                        <p className="mt-1 text-xs uppercase tracking-[0.2em] text-(--admin-gold)">
                           Artisan {item.artisan} • ETA {item.eta}
                         </p>
                       </div>
@@ -542,13 +542,13 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="sky">Approval pipeline</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Bespoke workflow lanes</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Bespoke workflow lanes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {activeSnapshot.customWorkflow.map((step) => (
                     <div key={step.label} className="flex items-center justify-between rounded-3xl border border-white/8 bg-white/6 px-4 py-3">
-                      <span className="text-sm text-[var(--admin-foreground)]">{step.label}</span>
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[var(--admin-gold)]">{step.count}</span>
+                      <span className="text-sm text-(--admin-foreground)">{step.label}</span>
+                      <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-(--admin-gold)">{step.count}</span>
                     </div>
                   ))}
                 </CardContent>
@@ -567,9 +567,9 @@ export function AdminWorkspace() {
                     <ProgressMetric label="Completion" value={`${artisan.completion}%`} width={artisan.completion} />
                     <ProgressMetric label="Attendance" value={artisan.attendance} width={Number(artisan.attendance.replace("%", ""))} />
                     <div className="rounded-3xl border border-white/8 bg-white/6 p-4">
-                      <p className="text-xs uppercase tracking-[0.22em] text-[var(--admin-muted)]">Active projects</p>
+                      <p className="text-xs uppercase tracking-[0.22em] text-(--admin-muted)">Active projects</p>
                       <p className="mt-2 text-2xl font-semibold">{artisan.activeProjects}</p>
-                      <p className="mt-2 text-sm text-[var(--admin-muted)]">{artisan.output}</p>
+                      <p className="mt-2 text-sm text-(--admin-muted)">{artisan.output}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -580,7 +580,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="emerald">WhatsApp concierge</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Communication history</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Communication history</CardTitle>
                   <CardDescription>Templates, reminders, project updates, and support context ready for the WhatsApp Cloud API layer.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -589,7 +589,7 @@ export function AdminWorkspace() {
                     "Your custom temple frame pricing is ready. Tap to review materials, size, and engraving notes.",
                     "We’ve uploaded fresh crafting photos for approval before final finishing.",
                   ].map((template) => (
-                    <div key={template} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm leading-6 text-[var(--admin-foreground)]">
+                    <div key={template} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm leading-6 text-(--admin-foreground)">
                       {template}
                     </div>
                   ))}
@@ -609,7 +609,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="stone">Recent activities</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Live pulse</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Live pulse</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {activeSnapshot.activities.map((activity) => (
@@ -617,7 +617,7 @@ export function AdminWorkspace() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold">{activity.title}</p>
-                          <p className="mt-2 text-sm leading-6 text-[var(--admin-muted)]">{activity.detail}</p>
+                          <p className="mt-2 text-sm leading-6 text-(--admin-muted)">{activity.detail}</p>
                         </div>
                         <Badge tone={activity.tone}>{activity.timestamp}</Badge>
                       </div>
@@ -631,7 +631,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="gold">Top products</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Profit-leading products</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Profit-leading products</CardTitle>
                   <CardDescription>Blend bestseller visibility with artisan margin intelligence.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -640,11 +640,11 @@ export function AdminWorkspace() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold">{product.name}</p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[var(--admin-muted)]">{product.category}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-(--admin-muted)">{product.category}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-[var(--admin-gold)]">{product.revenue}</p>
-                          <p className="text-xs text-[var(--admin-muted)]">
+                          <p className="font-semibold text-(--admin-gold)">{product.revenue}</p>
+                          <p className="text-xs text-(--admin-muted)">
                             {product.orders} orders • {product.margin} margin
                           </p>
                         </div>
@@ -660,7 +660,7 @@ export function AdminWorkspace() {
               <Card id="marketing">
                 <CardHeader>
                   <Badge tone="rose">Marketing studio</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Campaign dashboard</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Campaign dashboard</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {activeSnapshot.campaigns.map((campaign) => (
@@ -668,17 +668,17 @@ export function AdminWorkspace() {
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <p className="font-semibold">{campaign.name}</p>
-                          <p className="mt-2 text-sm text-[var(--admin-muted)]">{campaign.channel}</p>
+                          <p className="mt-2 text-sm text-(--admin-muted)">{campaign.channel}</p>
                         </div>
                         <Badge tone={campaign.status === "Live" ? "emerald" : campaign.status === "Draft" ? "stone" : "sky"}>{campaign.status}</Badge>
                       </div>
                       <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                         <div className="rounded-2xl border border-white/8 bg-black/10 p-3">
-                          <p className="text-[var(--admin-muted)]">Revenue</p>
+                          <p className="text-(--admin-muted)">Revenue</p>
                           <p className="mt-2 font-semibold">{campaign.revenue}</p>
                         </div>
                         <div className="rounded-2xl border border-white/8 bg-black/10 p-3">
-                          <p className="text-[var(--admin-muted)]">Reach</p>
+                          <p className="text-(--admin-muted)">Reach</p>
                           <p className="mt-2 font-semibold">{campaign.reach}</p>
                         </div>
                       </div>
@@ -692,12 +692,12 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="sky">Media library</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Asset operating model</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Asset operating model</CardTitle>
                   <CardDescription>Product images, artisan progress photos, customer references, and videos organized for Cloudinary-backed growth.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-3 sm:grid-cols-3">
                   {["Product images", "Customer uploads", "Artisan work stories", "CAD / 3D files", "Dispatch documents", "Campaign banners"].map((item) => (
-                    <div key={item} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--admin-muted)]">
+                    <div key={item} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm text-(--admin-muted)">
                       {item}
                     </div>
                   ))}
@@ -707,7 +707,7 @@ export function AdminWorkspace() {
               <Card id="security">
                 <CardHeader>
                   <Badge tone="stone">RBAC + security</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Access matrix</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Access matrix</CardTitle>
                   <CardDescription>Role-gated access for super admins, operations managers, artisan leads, support, and marketing.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -718,7 +718,7 @@ export function AdminWorkspace() {
                     "Customer Support • CRM, WhatsApp threads, approvals, and review moderation",
                     "Marketing Manager • campaigns, coupons, banners, and seasonal analytics",
                   ].map((role) => (
-                    <div key={role} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm text-[var(--admin-foreground)]">
+                    <div key={role} className="rounded-3xl border border-white/8 bg-white/6 p-4 text-sm text-(--admin-foreground)">
                       {role}
                     </div>
                   ))}
@@ -730,7 +730,7 @@ export function AdminWorkspace() {
               <Card>
                 <CardHeader>
                   <Badge tone="gold">Architecture deck</Badge>
-                  <CardTitle className="font-[var(--font-display)] text-3xl">Module foundation map</CardTitle>
+                  <CardTitle className="font-(--font-display) text-3xl">Module foundation map</CardTitle>
                   <CardDescription>Each card maps directly to the architecture document added in this repo, including schemas, routes, state, and scaling guidance.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -739,16 +739,16 @@ export function AdminWorkspace() {
                     return (
                       <motion.div key={module.id} whileHover={{ y: -6 }} transition={{ duration: 0.2 }} className="rounded-[28px] border border-white/8 bg-white/6 p-5">
                         <div className="flex items-start justify-between gap-3">
-                          <div className="rounded-2xl bg-white/8 p-3 text-[var(--admin-gold)]">
+                          <div className="rounded-2xl bg-white/8 p-3 text-(--admin-gold)">
                             <Icon className="h-5 w-5" />
                           </div>
                           <Badge tone={toneMap[module.status]}>{module.status}</Badge>
                         </div>
                         <h3 className="mt-4 text-lg font-semibold">{module.title}</h3>
-                        <p className="mt-2 text-sm leading-6 text-[var(--admin-muted)]">{module.summary}</p>
+                        <p className="mt-2 text-sm leading-6 text-(--admin-muted)">{module.summary}</p>
                         <div className="mt-4 space-y-2">
                           {module.highlights.map((highlight) => (
-                            <div key={highlight} className="rounded-2xl bg-black/10 px-3 py-2 text-sm text-[var(--admin-foreground)]">
+                            <div key={highlight} className="rounded-2xl bg-black/10 px-3 py-2 text-sm text-(--admin-foreground)">
                               {highlight}
                             </div>
                           ))}
@@ -785,14 +785,14 @@ function DesktopSidebar({
   onToggleSidebar: () => void;
 }) {
   return (
-    <aside className={cn("sticky top-4 hidden h-[calc(100vh-32px)] shrink-0 flex-col md:flex", collapsed ? "w-[90px]" : "w-[300px]")}>
-      <div className="admin-glass flex h-full flex-col rounded-[32px] border p-4">
+    <aside className={cn("sticky top-4 hidden h-[calc(100vh-32px)] shrink-0 flex-col md:flex", collapsed ? "w-22.5" : "w-75")}>
+      <div className="admin-glass flex h-full flex-col rounded-4xl border p-4">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div className={cn("overflow-hidden transition-all", collapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
-            <p className="text-xs uppercase tracking-[0.28em] text-[var(--admin-gold)]">MahabsCrafto ERP</p>
-            <h2 className="mt-2 font-[var(--font-display)] text-2xl">Admin atelier</h2>
+            <p className="text-xs uppercase tracking-[0.28em] text-(--admin-gold)">MahabsCrafto ERP</p>
+            <h2 className="mt-2 font-(--font-display) text-2xl">Admin atelier</h2>
           </div>
-          <button onClick={onToggleSidebar} className="rounded-full border border-white/10 p-2 text-[var(--admin-muted)]">
+          <button onClick={onToggleSidebar} className="rounded-full border border-white/10 p-2 text-(--admin-muted)">
             <PanelLeftClose className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")} />
           </button>
         </div>
@@ -800,10 +800,10 @@ function DesktopSidebar({
         <SidebarNav navItems={navItems} collapsed={collapsed} onNavigate={scrollToAnchor} />
 
         <div className="mt-auto rounded-[28px] border border-white/8 bg-white/6 p-4">
-          <p className={cn("text-xs uppercase tracking-[0.22em] text-[var(--admin-muted)]", collapsed && "text-center")}>Realtime</p>
+          <p className={cn("text-xs uppercase tracking-[0.22em] text-(--admin-muted)", collapsed && "text-center")}>Realtime</p>
           <div className="mt-3 flex items-center gap-3">
             <div className="h-3 w-3 rounded-full bg-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.8)]" />
-            {!collapsed ? <p className="text-sm text-[var(--admin-foreground)]">Socket.io connected workflow foundation</p> : null}
+            {!collapsed ? <p className="text-sm text-(--admin-foreground)">Socket.io connected workflow foundation</p> : null}
           </div>
         </div>
       </div>
@@ -831,13 +831,13 @@ function SidebarNav({
             onClick={() => onNavigate(item.anchor)}
             className="group flex w-full items-center gap-3 rounded-2xl border border-transparent px-3 py-3 text-left transition hover:border-white/8 hover:bg-white/6"
           >
-            <div className="rounded-2xl bg-white/6 p-2.5 text-[var(--admin-gold)]">
+            <div className="rounded-2xl bg-white/6 p-2.5 text-(--admin-gold)">
               <Icon className="h-4 w-4" />
             </div>
             {!collapsed ? (
               <div>
-                <p className="text-sm font-semibold text-[var(--admin-foreground)]">{item.label}</p>
-                <p className="text-xs text-[var(--admin-muted)]">{item.description}</p>
+                <p className="text-sm font-semibold text-(--admin-foreground)">{item.label}</p>
+                <p className="text-xs text-(--admin-muted)">{item.description}</p>
               </div>
             ) : null}
           </button>
@@ -862,11 +862,11 @@ function InfoStat({
     <div className="rounded-[28px] border border-white/10 bg-black/10 p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.22em] text-[var(--admin-muted)]">{label}</p>
+          <p className="text-xs uppercase tracking-[0.22em] text-(--admin-muted)">{label}</p>
           <p className="mt-3 text-3xl font-semibold">{value}</p>
-          <p className="mt-2 text-sm leading-6 text-[var(--admin-muted)]">{subcopy}</p>
+          <p className="mt-2 text-sm leading-6 text-(--admin-muted)">{subcopy}</p>
         </div>
-        <div className="rounded-2xl bg-white/8 p-3 text-[var(--admin-gold)]">
+        <div className="rounded-2xl bg-white/8 p-3 text-(--admin-gold)">
           <Icon className="h-5 w-5" />
         </div>
       </div>
@@ -878,8 +878,8 @@ function ProgressMetric({ label, value, width }: { label: string; value: string;
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
-        <span className="text-[var(--admin-muted)]">{label}</span>
-        <span className="font-semibold text-[var(--admin-foreground)]">{value}</span>
+        <span className="text-(--admin-muted)">{label}</span>
+        <span className="font-semibold text-(--admin-foreground)">{value}</span>
       </div>
       <div className="h-2 rounded-full bg-white/8">
         <div className="h-2 rounded-full bg-[linear-gradient(90deg,#d9b16f,#4c95c7)]" style={{ width: `${Math.max(12, width)}%` }} />
@@ -890,22 +890,22 @@ function ProgressMetric({ label, value, width }: { label: string; value: string;
 
 function AdminLoadingState() {
   return (
-    <div className="admin-shell min-h-screen px-4 py-6 text-[var(--admin-foreground)] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1600px] space-y-4">
+    <div className="admin-shell min-h-screen px-4 py-6 text-(--admin-foreground) sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-400 space-y-4">
         <Skeleton className="h-28 rounded-[28px]" />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className="h-40 rounded-[28px]" />
+            <Skeleton key={index} className="h-90 rounded-4xl" />
           ))}
         </div>
         <div className="grid gap-4 xl:grid-cols-[1.4fr_0.9fr]">
-          <Skeleton className="h-[360px] rounded-[28px]" />
-          <Skeleton className="h-[360px] rounded-[28px]" />
+          <Skeleton className="h-90 rounded-4xl" />
+          <Skeleton className="h-90 rounded-4xl" />
         </div>
         <div className="grid gap-4 lg:grid-cols-3">
-          <Skeleton className="h-[300px] rounded-[28px]" />
-          <Skeleton className="h-[300px] rounded-[28px]" />
-          <Skeleton className="h-[300px] rounded-[28px]" />
+          <Skeleton className="h-75 rounded-4xl" />
+          <Skeleton className="h-75 rounded-4xl" />
+          <Skeleton className="h-75 rounded-4xl" />
         </div>
       </div>
     </div>

@@ -1600,7 +1600,7 @@ const saveAd = async (event: FormEvent) => {
                   />
                 </div>
 
-                <div className="mt-4 max-h-[860px] overflow-auto">
+                <div className="mt-4 max-h-215 overflow-auto">
                   {filteredProducts.map((product) => (
                     <div key={product._id} className="grid gap-3 border-b border-gray-200 py-4 md:grid-cols-[72px_1fr_auto] md:items-center">
                       <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-50">
@@ -1732,7 +1732,7 @@ const saveAd = async (event: FormEvent) => {
                             </div>
                           </div>
 
-                          <div className="flex min-w-[220px] flex-col gap-2">
+                          <div className="flex min-w-55 flex-col gap-2">
                             <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Update stage</label>
                             <select
                               value={project.stage}

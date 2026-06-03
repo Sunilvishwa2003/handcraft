@@ -1,7 +1,6 @@
 "use client";
 
 import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, LogIn, UserRound } from 'lucide-react';
@@ -125,24 +124,18 @@ export default function Navbar() {
     <nav className="bg-[#131921] text-white shadow-md sticky top-0 z-50 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 overflow-x-hidden">
         {/* Main Navbar Row */}
-        <div className="flex items-center gap-2 py-2 min-h-[3.5rem] md:min-h-[5.25rem] min-w-0">
+        <div className="flex items-center gap-2 py-2 min-h-14 md:min-h-21 min-w-0">
           {/* Logo */}
           <Link 
             href="/" 
             className="flex items-center gap-2 md:gap-3 font-bold leading-none shrink-0" 
             style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}
           >
-            <div className="relative h-10 w-10 sm:h-16 sm:w-16 md:h-20 md:w-20 shrink-0">
-              <Image
-                src={NAVBAR_LOGO_SRC}
-                alt="MahabsCrafto logo"
-                fill
-                priority
-                unoptimized
-                sizes="(max-width: 640px) 40px, (max-width: 768px) 64px, 80px"
-                className="object-contain"
-              />
-            </div>
+            <img 
+              src={NAVBAR_LOGO_SRC}
+              alt="MahabsCrafto logo"
+              className="h-10 w-10 sm:h-16 sm:w-16 md:h-20 md:w-20 shrink-0 object-contain"
+            />
             <div className="flex flex-col leading-tight min-w-0">
               <span className="tracking-tight text-[clamp(1.1rem,5vw,2.8rem)] sm:text-[clamp(1.6rem,4vw,3.25rem)] md:text-5xl truncate whitespace-nowrap">
                 MahabsCrafto
@@ -171,7 +164,7 @@ export default function Navbar() {
                 <button
                   type="submit"
                   aria-label="Search site"
-                  className="inline-flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full bg-slate-950 px-3 text-sm font-semibold text-white transition duration-200 hover:bg-sky-500"
+                  className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full bg-slate-950 px-3 text-sm font-semibold text-white transition duration-200 hover:bg-slate-900"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -225,14 +218,14 @@ export default function Navbar() {
             <Link 
               href="/cart" 
               aria-label="Shopping cart"
-              className="flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 min-h-[44px] min-w-[44px] text-sm font-semibold hover:bg-white/20 justify-center"
+              className="flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 min-h-11 min-w-11 text-sm font-semibold hover:bg-white/20 justify-center"
             >
               <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="hidden md:inline">Cart</span>
               {cartCount ? (
-                <span className="rounded-full bg-sky-500 px-1.5 py-0.5 text-[10px] md:text-xs font-bold text-white min-w-[1.25rem] text-center">
+                <span className="rounded-full bg-sky-500 px-1.5 py-0.5 text-[10px] md:text-xs font-bold text-white min-w-5 text-center">
                   {cartCount}
                 </span>
               ) : null}
@@ -242,7 +235,7 @@ export default function Navbar() {
               <Link
                 href="/profile"
                 aria-label="User profile"
-                className="inline-flex min-h-[44px] min-w-[44px] items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 text-sm font-semibold text-white transition hover:bg-white/20 hover:text-sky-200 justify-center"
+                className="inline-flex min-h-11 min-w-11 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 text-sm font-semibold text-white transition hover:bg-white/20 hover:text-sky-200 justify-center"
               >
                 <UserRound className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="hidden sm:inline">Profile</span>
@@ -251,7 +244,7 @@ export default function Navbar() {
               <Link
                 href="/account"
                 aria-label="Login"
-                className="inline-flex min-h-[44px] min-w-[44px] items-center gap-1 rounded-full bg-white px-2 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50 justify-center"
+                className="inline-flex min-h-11 min-w-11 items-center gap-1 rounded-full bg-white px-2 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50 justify-center"
               >
                 <LogIn className="h-4 w-4" />
                 <span className="hidden sm:inline">Login</span>
@@ -349,7 +342,7 @@ export default function Navbar() {
               <Link
                 key={cat}
                 href={`/products?category=${encodeURIComponent(cat)}`}
-                className="shrink-0 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 px-4 py-1.5 text-xs md:text-sm font-bold text-gray-300 hover:text-sky-400 hover:border-sky-500/50 transition-colors duration-300 whitespace-nowrap"
+                className="shrink-0 rounded-full bg-linear-to-br from-gray-800 to-gray-900 border border-gray-700/50 px-4 py-1.5 text-xs md:text-sm font-bold text-gray-300 hover:text-sky-400 hover:border-sky-500/50 transition-colors duration-300 whitespace-nowrap"
               >
                 {cat}
               </Link>

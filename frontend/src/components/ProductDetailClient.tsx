@@ -351,7 +351,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                       type="button"
                       onClick={openWhatsAppCustomization}
                       disabled={isCustomizing}
-                      className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-bold text-white shadow-lg transition-all hover:scale-[1.02] sm:col-span-2"
+                      className="flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-emerald-600 py-3 font-bold text-white shadow-lg transition-all hover:scale-[1.02] sm:col-span-2"
                     >
                       <MessageCircle className="h-5 w-5" />
                       {isCustomizing ? "Opening WhatsApp..." : "Customize this product"}
@@ -363,7 +363,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                   <button
                     onClick={openWhatsAppCustomization}
                     disabled={isCustomizing}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 font-bold text-white shadow-lg transition-all hover:scale-[1.02]"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-emerald-500 to-emerald-600 py-3 font-bold text-white shadow-lg transition-all hover:scale-[1.02]"
                   >
                     <MessageCircle className="h-5 w-5" />
                     {isCustomizing ? "Opening WhatsApp..." : "Customize"}

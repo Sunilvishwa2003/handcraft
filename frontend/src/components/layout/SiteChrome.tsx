@@ -16,7 +16,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
   return (
     <>
       {/* Promotional Banner - Mobile Optimized */}
-      <div className="bg-gradient-to-r from-sky-500 via-cyan-400 to-sky-300 py-1.5 text-center text-xs sm:text-sm font-bold text-slate-950 overflow-hidden">
+      <div className="bg-linear-to-r from-sky-500 via-cyan-400 to-sky-300 py-1.5 text-center text-xs sm:text-sm font-bold text-slate-950 overflow-hidden">
         <span className="inline-block animate-pulse">
           🎨 Handcrafted Art & Sculptures | Premium Quality | Safe Delivery Assured
         </span>
@@ -49,7 +49,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
                 />
                 <button 
                   type="submit" 
-                  className="rounded-r-lg bg-gradient-to-r from-sky-500 via-cyan-400 to-sky-300 px-4 py-2 text-sm font-bold text-slate-950 shadow-lg hover:from-sky-600 hover:to-cyan-500"
+                  className="rounded-r-lg bg-linear-to-r from-sky-500 via-cyan-400 to-sky-300 px-4 py-2 text-sm font-bold text-slate-950 shadow-lg hover:from-sky-600 hover:to-cyan-500"
                 >
                   Subscribe
                 </button>
