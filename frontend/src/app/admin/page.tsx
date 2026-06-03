@@ -368,9 +368,13 @@ export default function AdminPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [projectBoardFilter, setProjectBoardFilter] = useState<ProjectBoardFilter>("all");
 
+  const currentUser = getStoredUser();
+  const isAdminUser = Boolean(currentUser?.isAdmin);
+
   const load = async () => {
     setErrorMessage(null);
     const user = getStoredUser();
+    console.debug("[admin/page] load start", { isAdmin: user?.isAdmin, email: user?.email });
     if (!user?.isAdmin) {
       setNotice({ tone: "error", text: "Login with an admin account to manage products, orders, custom projects, and storefront assets." });
       setLoading(false);
@@ -443,6 +447,16 @@ export default function AdminPage() {
       });
       setErrorMessage("One or more admin API requests failed. See browser console for details.");
     }
+
+    console.debug("[admin/page] load complete", {
+      dashboardPayload,
+      loading: false,
+      dashboardResultStatus: dashboardResult.status,
+      productResultStatus: productResult.status,
+      orderResultStatus: orderResult.status,
+      customProjectResultStatus: customProjectResult.status,
+      adResultStatus: adResult.status,
+    });
 
     setLoading(false);
   };
@@ -958,19 +972,7 @@ const saveAd = async (event: FormEvent) => {
     }
   };
 
-  if (loading || !dashboard) {
-    return (
-      <main className="min-h-screen bg-gray-100 p-3 md:p-6">
-        <div className="mx-auto max-w-7xl space-y-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-32 animate-pulse rounded-md bg-white shadow-sm" />
-          ))}
-        </div>
-      </main>
-    );
-  }
-
-  if (!getStoredUser()?.isAdmin) {
+  if (!isAdminUser && !loading) {
     return (
       <main className="min-h-screen bg-gray-100 p-3 md:p-6">
         <section className="mx-auto max-w-xl rounded-md bg-white p-6 shadow-sm">
@@ -983,6 +985,19 @@ const saveAd = async (event: FormEvent) => {
             Login as admin
           </Link>
         </section>
+      </main>
+    );
+  }
+
+  if (loading || !dashboard) {
+    console.debug("[admin/page] render guard", { loading, dashboard, isAdminUser });
+    return (
+      <main className="min-h-screen bg-gray-100 p-3 md:p-6">
+        <div className="mx-auto max-w-7xl space-y-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-32 animate-pulse rounded-md bg-white shadow-sm" />
+          ))}
+        </div>
       </main>
     );
   }

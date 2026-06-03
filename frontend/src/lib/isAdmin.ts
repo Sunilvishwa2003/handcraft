@@ -9,10 +9,10 @@ export function isAdmin(email?: string | null): boolean {
   return !!email && ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
-export function normalizeUserAdminState<T extends Pick<User, "email"> & { isAdmin?: boolean }>(user: T): T & { isAdmin: boolean } {
+export function normalizeUserAdminState<T extends Pick<User, "email" | "isAdmin"> & { isAdmin?: boolean }>(user: T): T & { isAdmin: boolean } {
   return {
     ...user,
-    isAdmin: isAdmin(user.email),
+    isAdmin: typeof user.isAdmin === "boolean" ? user.isAdmin : isAdmin(user.email),
   };
 }
 
