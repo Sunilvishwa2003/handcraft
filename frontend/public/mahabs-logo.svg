@@ -7,6 +7,7 @@
   </defs>
   <rect width="240" height="240" rx="40" fill="#2b1f12" />
   <circle cx="120" cy="120" r="98" fill="url(#g)" />
+  <circle cx="120" cy="120" r="98" fill="none" stroke="#f8fafc" stroke-width="8" opacity="0.12" />
   <path d="M80 100c0-22 18-40 40-40s40 18 40 40c0 22-18 30-40 56-22-26-40-34-40-56z" fill="#f3e0c2" />
   <path d="M120 60c-30 0-50 24-50 50 0 28 22 38 50 66 28-28 50-38 50-66 0-26-20-50-50-50z" fill="#eed7b5" opacity="0.85" />
   <circle cx="108" cy="100" r="6" fill="#2b1f12" />

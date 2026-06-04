@@ -134,7 +134,8 @@ export default function Navbar() {
             <img 
               src={NAVBAR_LOGO_SRC}
               alt="MahabsCrafto logo"
-              className="h-10 w-10 sm:h-16 sm:w-16 md:h-20 md:w-20 shrink-0 object-contain"
+              loading="eager"
+              className="h-10 w-10 sm:h-16 sm:w-16 md:h-20 md:w-20 shrink-0 rounded-full border border-white/15 bg-white/5 object-contain"
             />
             <div className="flex flex-col leading-tight min-w-0">
               <span className="tracking-tight text-[clamp(1.1rem,5vw,2.8rem)] sm:text-[clamp(1.6rem,4vw,3.25rem)] md:text-5xl truncate whitespace-nowrap">
