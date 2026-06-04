@@ -16,8 +16,7 @@ const NAVBAR_LOGO_SRC = '/mahabs-logo.svg';
 
 export default function Navbar() {
   const router = useRouter();
-  const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<Array<{ _id: string; name: string; brand: string; category: string; vendorName?: string; image?: string; price?: number; countInStock?: number }>>([]);
+  const [query, setQuery] = useState('');  const [logoFailed, setLogoFailed] = useState(false);  const [suggestions, setSuggestions] = useState<Array<{ _id: string; name: string; brand: string; category: string; vendorName?: string; image?: string; price?: number; countInStock?: number }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionTimer = useRef<number | null>(null);
   const [cartCount, setCartCount] = useState(0);
@@ -131,12 +130,18 @@ export default function Navbar() {
             className="flex items-center gap-2 md:gap-3 font-bold leading-none shrink-0" 
             style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}
           >
-            <img 
-              src={NAVBAR_LOGO_SRC}
-              alt="MahabsCrafto logo"
-              loading="eager"
-              className="h-10 w-10 sm:h-16 sm:w-16 md:h-20 md:w-20 shrink-0 rounded-full border border-white/15 bg-white/5 object-contain"
-            />
+            <div className="h-14 w-14 sm:h-20 sm:w-20 md:h-24 md:w-24 shrink-0 flex items-center justify-center text-white font-bold text-sm sm:text-base md:text-lg relative overflow-hidden">
+              {!logoFailed && (
+                <img 
+                  src={NAVBAR_LOGO_SRC}
+                  alt="MahabsCrafto"
+                  loading="eager"
+                  className="h-full w-full object-contain p-1"
+                  onError={() => setLogoFailed(true)}
+                />
+              )}
+              {logoFailed && <span>MC</span>}
+            </div>
             <div className="flex flex-col leading-tight min-w-0">
               <span className="tracking-tight text-[clamp(1.1rem,5vw,2.8rem)] sm:text-[clamp(1.6rem,4vw,3.25rem)] md:text-5xl truncate whitespace-nowrap">
                 MahabsCrafto
