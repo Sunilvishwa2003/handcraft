@@ -382,93 +382,129 @@ export default function AdminPage() {
       return;
     }
 
+    setLoading(true);
     console.debug("[admin/page] Fetching admin data...");
     const startTime = Date.now();
-    
-    const [dashboardResult, productResult, orderResult, customProjectResult, adResult, groupedResult] = await Promise.allSettled([
-      apiFetch<Dashboard>("/admin/dashboard"),
-      apiFetch<Product[]>("/admin/products"),
-      apiFetch<Order[]>("/admin/orders"),
-      apiFetch<CustomProject[]>("/custom-orders"),
-      apiFetch<Ad[]>("/admin/ads"),
-      apiFetch<{ success: boolean; groups: CategoryGroup[] }>("/admin/products/grouped"),
-    ]);
-    
-    console.debug("[admin/page] Fetch complete", { 
-      duration: Date.now() - startTime,
-      dashboardStatus: dashboardResult.status,
-      dashboardError: dashboardResult.status === "rejected" ? String(dashboardResult.reason) : undefined,
-    });
 
-    const productList = sortByNewest(productResult.status === "fulfilled" ? productResult.value.map((product) => normalizeAdminProduct(product)) : []);
-    const orderList = sortByNewest(orderResult.status === "fulfilled" ? orderResult.value : []);
-    const customProjectList = sortByNewest(customProjectResult.status === "fulfilled" ? customProjectResult.value : []);
-    const adList = sortByNewest(adResult.status === "fulfilled" ? adResult.value : []);
-    const groupedProducts = groupedResult.status === "fulfilled" ? groupedResult.value.groups : [];
+    function safeArray<T>(value: unknown): T[] {
+      return Array.isArray(value) ? (value as T[]) : [];
+    }
 
-    console.debug("[admin/page] fetch results", {
-      dashboard: dashboardResult.status === "fulfilled" ? dashboardResult.value : dashboardResult.reason || null,
-      products: productResult.status === "fulfilled" ? productResult.value.length : `ERROR: ${String(productResult.reason)}`,
-      orders: orderResult.status === "fulfilled" ? orderResult.value.length : `ERROR: ${String(orderResult.reason)}`,
-      customProjects: customProjectResult.status === "fulfilled" ? customProjectResult.value.length : `ERROR: ${String(customProjectResult.reason)}`,
-      ads: adResult.status === "fulfilled" ? adResult.value.length : `ERROR: ${String(adResult.reason)}`,
-      groupedProducts: groupedProducts.length,
-    });
+    function safeObject<T extends object>(value: unknown): T | null {
+      return value && typeof value === "object" ? (value as T) : null;
+    }
 
     const fallbackDashboard: Dashboard = {
       metrics: {
-        orders: orderList.length,
-        users: dashboardResult.status === "fulfilled" ? dashboardResult.value?.metrics?.users ?? 0 : 0,
-        products: productList.length,
-        revenue: orderList.reduce((sum, order) => sum + (order.isPaid ? order.totalPrice : 0), 0),
+        orders: 0,
+        users: 0,
+        products: 0,
+        revenue: 0,
       },
-      lowStock: productList.filter((product) => product.countInStock <= (product.stockAlertThreshold ?? 5)).slice(0, 12),
-      recentOrders: orderList.slice(0, 10),
+      lowStock: [],
+      recentOrders: [],
     };
 
-    const dashboardPayload =
-      dashboardResult.status === "fulfilled" && dashboardResult.value?.metrics
-        ? dashboardResult.value
-        : fallbackDashboard;
+    try {
+      const [dashboardResult, productResult, orderResult, customProjectResult, adResult, groupedResult] = await Promise.allSettled([
+        apiFetch("/admin/dashboard"),
+        apiFetch("/admin/products"),
+        apiFetch("/admin/orders"),
+        apiFetch("/custom-orders"),
+        apiFetch("/admin/ads"),
+        apiFetch("/admin/products/grouped"),
+      ]);
 
-    setDashboard(dashboardPayload);
-    setProducts(productList);
-    setOrders(orderList);
-    setCustomProjects(customProjectList);
-    setAds(adList);
-    setCategoryGroups(
-      groupedProducts.filter((group) =>
-        categories.some(
-          (category) => category.name === group.category || category.slug === group.category,
-        ),
-      ),
-    );
-
-    if (
-      dashboardResult.status === "rejected" ||
-      productResult.status === "rejected" ||
-      orderResult.status === "rejected" ||
-      customProjectResult.status === "rejected" ||
-      adResult.status === "rejected"
-    ) {
-      setNotice({
-        tone: "info",
-        text: "Some admin modules could not be loaded completely, so the dashboard is using the data that is currently available.",
+      console.debug("[admin/page] Fetch complete", {
+        duration: Date.now() - startTime,
+        dashboardStatus: dashboardResult.status,
+        dashboardError: dashboardResult.status === "rejected" ? String(dashboardResult.reason) : undefined,
       });
-      setErrorMessage("One or more admin API requests failed. See browser console for details.");
+
+      const productItems = safeArray<Product>(productResult.status === "fulfilled" ? productResult.value : undefined);
+      const orderItems = safeArray<Order>(orderResult.status === "fulfilled" ? orderResult.value : undefined);
+      const customProjectItems = safeArray<CustomProject>(customProjectResult.status === "fulfilled" ? customProjectResult.value : undefined);
+      const adItems = safeArray<Ad>(adResult.status === "fulfilled" ? adResult.value : undefined);
+      const groupedPayload = safeObject<{ success: boolean; groups?: unknown }>(groupedResult.status === "fulfilled" ? groupedResult.value : undefined);
+      const groupedProducts = safeArray<CategoryGroup>(groupedPayload?.groups);
+
+      const productList = sortByNewest(productItems.map((product) => normalizeAdminProduct(product)));
+      const orderList = sortByNewest(orderItems);
+      const customProjectList = sortByNewest(customProjectItems);
+      const adList = sortByNewest(adItems);
+
+      console.debug("[admin/page] fetch results", {
+        dashboard: dashboardResult.status === "fulfilled" ? dashboardResult.value : dashboardResult.reason || null,
+        products: productItems.length,
+        orders: orderItems.length,
+        customProjects: customProjectItems.length,
+        ads: adItems.length,
+        groupedProducts: groupedProducts.length,
+      });
+
+      const dashboardPayload =
+        dashboardResult.status === "fulfilled" && safeObject<Dashboard>(dashboardResult.value)?.metrics
+          ? safeObject<Dashboard>(dashboardResult.value)!
+          : {
+              ...fallbackDashboard,
+              metrics: {
+                orders: orderList.length,
+                users: dashboardResult.status === "fulfilled" ? safeObject<Dashboard>(dashboardResult.value)?.metrics?.users ?? 0 : 0,
+                products: productList.length,
+                revenue: orderList.reduce((sum, order) => sum + (order.isPaid ? order.totalPrice : 0), 0),
+              },
+              lowStock: productList.filter((product) => product.countInStock <= (product.stockAlertThreshold ?? 5)).slice(0, 12),
+              recentOrders: orderList.slice(0, 10),
+            };
+
+      setDashboard(dashboardPayload);
+      setProducts(productList);
+      setOrders(orderList);
+      setCustomProjects(customProjectList);
+      setAds(adList);
+      setCategoryGroups(
+        groupedProducts.filter((group) =>
+          categories.some((category) => category.name === group.category || category.slug === group.category),
+        ),
+      );
+
+      if (
+        dashboardResult.status === "rejected" ||
+        productResult.status === "rejected" ||
+        orderResult.status === "rejected" ||
+        customProjectResult.status === "rejected" ||
+        adResult.status === "rejected"
+      ) {
+        setNotice({
+          tone: "info",
+          text: "Some admin modules could not be loaded completely, so the dashboard is using the data that is currently available.",
+        });
+        setErrorMessage("One or more admin API requests failed. See browser console for details.");
+      }
+
+      console.debug("[admin/page] load complete", {
+        dashboardPayload,
+        loading: false,
+        dashboardResultStatus: dashboardResult.status,
+        productResultStatus: productResult.status,
+        orderResultStatus: orderResult.status,
+        customProjectResultStatus: customProjectResult.status,
+        adResultStatus: adResult.status,
+      });
+    } catch (error) {
+      console.error("[admin/page] unexpected admin load failure:", error);
+      setDashboard(fallbackDashboard);
+      setProducts([]);
+      setOrders([]);
+      setCustomProjects([]);
+      setAds([]);
+      setCategoryGroups([]);
+      setNotice({ tone: "error", text: "Admin data could not be loaded due to an unexpected error." });
+      setErrorMessage(error instanceof Error ? error.message : String(error));
+      throw error;
+    } finally {
+      setLoading(false);
     }
-
-    console.debug("[admin/page] load complete", {
-      dashboardPayload,
-      loading: false,
-      dashboardResultStatus: dashboardResult.status,
-      productResultStatus: productResult.status,
-      orderResultStatus: orderResult.status,
-      customProjectResultStatus: customProjectResult.status,
-      adResultStatus: adResult.status,
-    });
-
-    setLoading(false);
   };
 
   useEffect(() => {
