@@ -213,6 +213,15 @@ router.get(
     const sortBy = String(req.query.sortBy || 'createdAt');
     const sortOrder = String(req.query.sortOrder || 'desc') === 'asc' ? 1 : -1;
 
+    console.debug('[admin/orders] GET request', {
+      page,
+      pageSize,
+      status: status || 'all',
+      search: search || 'none',
+      sortBy,
+      sortOrder: sortOrder === 1 ? 'asc' : 'desc',
+    });
+
     const filter: Record<string, unknown> = {};
     if (status) {
       filter.status = status;
@@ -229,12 +238,37 @@ router.get(
       ];
     }
 
+    console.debug('[admin/orders] filter applied', { hasFilter: Object.keys(filter).length > 0 });
+
     const total = await Order.countDocuments(filter);
+    console.debug('[admin/orders] total documents', { total });
+
     const orders = await Order.find(filter)
       .sort({ [sortBy]: sortOrder })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .populate('user', 'name email');
+
+    console.debug('[admin/orders] query completed', {
+      returned: orders.length,
+      page,
+      pages: Math.ceil(total / pageSize),
+      pageSize,
+      expectedSkip: (page - 1) * pageSize,
+    });
+
+    // Log first order structure for debugging
+    if (orders.length > 0) {
+      console.debug('[admin/orders] first order structure', {
+        _id: orders[0]._id,
+        orderId: orders[0].orderId,
+        hasUser: !!orders[0].user,
+        userName: orders[0].user?.name,
+        orderItemsCount: orders[0].orderItems?.length || 0,
+        status: orders[0].status,
+        totalPrice: orders[0].totalPrice,
+      });
+    }
 
     res.json({
       orders,
