@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import Coupon from '../models/Coupon';
 import Order from '../models/Order';
 import Product, { type IProduct } from '../models/Product';
-import User from '../models/User';
+import User, { type IUser } from '../models/User';
 import Ad, { AD_PLACEMENTS, type AdPlacement } from '../models/Ad';
 import Notification from '../models/Notification';
 import { admin, protect } from '../middleware/authMiddleware';
@@ -98,6 +98,14 @@ const serializeAdminProduct = <T extends ProductImageCarrier>(product: T) => ({
   images: buildProductImageArray(product as ProductImageCarrier, ''),
 });
 
+const isPopulatedUser = (user: mongoose.Types.ObjectId | IUser | null | undefined): user is IUser => {
+  return Boolean(user && typeof user === 'object' && 'name' in user);
+};
+
+const getOrderUserName = (user: mongoose.Types.ObjectId | IUser | null | undefined): string | undefined => {
+  return isPopulatedUser(user) ? user.name : undefined;
+};
+
 router.use(protect, admin);
 router.param('id', validateObjectId('id'));
 
@@ -125,7 +133,7 @@ router.get(
       Product.countDocuments(),
       Order.aggregate([{ $match: { isPaid: true } }, { $group: { _id: null, revenue: { $sum: '$totalPrice' } } }]),
       Product.find({ $expr: { $lte: ['$countInStock', '$stockAlertThreshold'] } }).limit(10),
-      Order.find().sort({ createdAt: -1 }).limit(10).populate('user', 'name email'),
+      Order.find().sort({ createdAt: -1 }).limit(10).populate<{ user: IUser }>('user', 'name email'),
     ]);
 
     const responsePayload = {
@@ -247,7 +255,7 @@ router.get(
       .sort({ [sortBy]: sortOrder })
       .skip((page - 1) * pageSize)
       .limit(pageSize)
-      .populate('user', 'name email');
+      .populate<{ user: IUser }>('user', 'name email');
 
     console.debug('[admin/orders] query completed', {
       returned: orders.length,
@@ -263,7 +271,7 @@ router.get(
         _id: orders[0]._id,
         orderId: orders[0].orderId,
         hasUser: !!orders[0].user,
-        userName: orders[0].user?.name,
+        userName: getOrderUserName(orders[0].user),
         orderItemsCount: orders[0].orderItems?.length || 0,
         status: orders[0].status,
         totalPrice: orders[0].totalPrice,
@@ -283,7 +291,7 @@ router.get(
 router.get(
   '/orders/:id',
   asyncHandler(async (req, res) => {
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
+    const order = await Order.findById(req.params.id).populate<{ user: IUser }>('user', 'name email');
     if (!order) {
       res.status(404);
       throw new Error('Order not found');

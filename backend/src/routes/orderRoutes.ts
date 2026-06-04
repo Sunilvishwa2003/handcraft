@@ -3,6 +3,7 @@ import Cart from '../models/Cart';
 import Notification from '../models/Notification';
 import Order from '../models/Order';
 import Product from '../models/Product';
+import { type IUser } from '../models/User';
 import { admin, optionalProtect, protect } from '../middleware/authMiddleware';
 import asyncHandler from '../utils/asyncHandler';
 import { AuthenticatedRequest } from '../types/http';
@@ -181,8 +182,8 @@ router.get(
   protect,
   asyncHandler(async (req, res) => {
     const user = (req as AuthenticatedRequest).user;
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
-    if (!order || (!user?.isAdmin && String(order.user._id || order.user) !== String(user?._id))) {
+    const order = await Order.findById(req.params.id).populate<{ user: IUser }>('user', 'name email');
+    if (!order || (!user?.isAdmin && String((order.user as { _id?: unknown } | undefined)?._id || order.user) !== String(user?._id))) {
       res.status(404);
       throw new Error('Order not found');
     }

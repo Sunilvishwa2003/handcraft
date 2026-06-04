@@ -2,8 +2,9 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 
 import Link from "next/link";
-import { DragEvent as ReactDragEvent, FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
-import { apiFetch, formatPrice, getApiUrl, getProductImageUrl, getStoredUser, PRODUCT_IMAGE_PLACEHOLDER, resolveAssetUrl } from "@/lib/api";
+import { DragEvent as ReactDragEvent, FormEvent, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { io } from "socket.io-client";
+import { apiFetch, formatPrice, getApiUrl, getProductImageUrl, getStoredUser, PRODUCT_IMAGE_PLACEHOLDER, resolveAssetUrl, getSocketUrl } from "@/lib/api";
 import ProjectAccuracyChart from "@/components/ProjectAccuracyChart";
 import { Ad, CustomProject, CustomProjectStage, Order, Product } from "@/lib/types";
 
@@ -429,13 +430,14 @@ export default function AdminPage() {
       const productItems = safeArray<Product>(productResult.status === "fulfilled" ? productResult.value : undefined);
       const orderItemsPayload = safeObject<{ orders?: unknown; total?: number; page?: number; pages?: number; pageSize?: number }>(orderResult.status === "fulfilled" ? orderResult.value : undefined);
       const orderItems = safeArray<Order>(orderItemsPayload?.orders);
+      const dashboardOrders = safeArray<Order>(safeObject<Dashboard>(dashboardResult.status === "fulfilled" ? dashboardResult.value : undefined)?.recentOrders);
       const customProjectItems = safeArray<CustomProject>(customProjectResult.status === "fulfilled" ? customProjectResult.value : undefined);
       const adItems = safeArray<Ad>(adResult.status === "fulfilled" ? adResult.value : undefined);
       const groupedPayload = safeObject<{ success: boolean; groups?: unknown }>(groupedResult.status === "fulfilled" ? groupedResult.value : undefined);
       const groupedProducts = safeArray<CategoryGroup>(groupedPayload?.groups);
 
       const productList = sortByNewest(productItems.map((product) => normalizeAdminProduct(product)));
-      const orderList = sortByNewest(orderItems);
+      const orderList = sortByNewest(orderItems.length ? orderItems : dashboardOrders);
       const customProjectList = sortByNewest(customProjectItems);
       const adList = sortByNewest(adItems);
 
@@ -443,7 +445,8 @@ export default function AdminPage() {
         dashboard: dashboardResult.status === "fulfilled" ? dashboardResult.value : dashboardResult.reason || null,
         products: productItems.length,
         ordersPayload: orderItemsPayload ? { total: orderItemsPayload.total, pages: orderItemsPayload.pages, returned: orderItems.length } : null,
-        orders: orderItems.length,
+        orders: orderList.length,
+        dashboardRecentOrders: dashboardOrders.length,
         customProjects: customProjectItems.length,
         ads: adItems.length,
         groupedProducts: groupedProducts.length,
@@ -522,6 +525,39 @@ export default function AdminPage() {
     });
   }, []);
 
+  useEffect(() => {
+    const user = getStoredUser();
+    if (!user?.isAdmin) {
+      return;
+    }
+
+    const socket = io(getSocketUrl(), {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      withCredentials: true,
+    });
+
+    socket.on("connect", () => {
+      console.debug("[admin/page] socket connected", { socketId: socket.id });
+      socket.emit("join:user", user._id);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("[admin/page] socket connection error:", error);
+    });
+
+    socket.on("order:update", () => {
+      console.debug("[admin/page] received order:update event, refreshing admin dashboard");
+      load().catch((error) => console.error("[admin/page] live refresh failed:", error));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const refreshData = async () => {
     setRefreshing(true);
 
@@ -542,15 +578,19 @@ export default function AdminPage() {
       .sort((left, right) => left.countInStock - right.countInStock)
       .slice(0, 12);
 
+    const recentOrdersSource = orders.length ? orders : dashboard?.recentOrders ?? [];
+    const ordersCount = dashboard?.metrics.orders ?? orders.length;
+    const revenueAmount = dashboard?.metrics.revenue ?? orders.reduce((sum, order) => sum + (order.isPaid ? order.totalPrice : 0), 0);
+
     return {
       metrics: {
-        orders: orders.length,
+        orders: ordersCount,
         users: dashboard?.metrics.users ?? 0,
         products: products.length,
-        revenue: orders.reduce((sum, order) => sum + (order.isPaid ? order.totalPrice : 0), 0),
+        revenue: revenueAmount,
       },
       lowStock,
-      recentOrders: sortByNewest(orders).slice(0, 10),
+      recentOrders: sortByNewest(recentOrdersSource).slice(0, 10),
     };
   }, [dashboard, orders, products]);
 
@@ -593,7 +633,7 @@ export default function AdminPage() {
           order.user?.email,
           order.status,
           order.paymentMethod,
-          ...order.orderItems.map((item) => item.name),
+          ...(Array.isArray(order.orderItems) ? order.orderItems.map((item) => item.name) : []),
         ]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(query)),
@@ -1228,11 +1268,41 @@ const saveAd = async (event: FormEvent) => {
                 <div className="mt-4 space-y-3">
                   {dashboardView.recentOrders.length ? (
                     dashboardView.recentOrders.slice(0, 5).map((order) => (
-                      <div key={order._id} className="rounded-md border border-gray-200 p-3">
-                        <p className="font-semibold text-gray-950">{order._id}</p>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {formatPrice(order.totalPrice)} · {formatAdminLabel(order.status)} · {order.user?.name || order.user?.email || "Customer"}
-                        </p>
+                      <div key={order._id} className="rounded-md border border-gray-200 p-3 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="h-16 w-16 overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+                            <img
+                              src={getProductImageUrl(order.orderItems?.[0]?.image || PRODUCT_IMAGE_PLACEHOLDER)}
+                              alt={order.orderItems?.[0]?.name || "Order item"}
+                              className="h-full w-full object-cover"
+                              onError={(event) => {
+                                event.currentTarget.onerror = null;
+                                event.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-950">{order.orderId || order._id}</p>
+                            <p className="text-sm text-gray-600">
+                              {order.user?.name || "Customer"} · {order.user?.email || "No email"}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {order.orderItems?.[0]?.name || "Product"} · Qty {order.orderItems?.[0]?.qty ?? 0}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {order.shippingAddress?.address}, {order.shippingAddress?.city}, {order.shippingAddress?.postalCode}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-gray-950">{formatPrice(order.totalPrice)}</p>
+                            <p className="text-xs text-gray-500">{formatAdminDate(order.createdAt)}</p>
+                          </div>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-3">
+                          <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{order.isPaid ? "Paid" : "Unpaid"}</span>
+                          <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{order.isDelivered ? "Delivered" : "Pending delivery"}</span>
+                          <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700">{formatAdminLabel(order.status)}</span>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -2294,7 +2364,7 @@ const saveAd = async (event: FormEvent) => {
               </div>
 
               {/* Pricing Breakdown */}
-              <div className="border-t border-gray-200 pt-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="border border-gray-200 pt-6 bg-gray-50 rounded-lg p-4">
                 <h3 className="font-semibold text-gray-950 mb-4">Pricing Breakdown</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -2421,7 +2491,7 @@ const saveAd = async (event: FormEvent) => {
 
               {/* Fraud Analysis */}
               {(selectedOrderDetail.fraudRiskScore > 0 || (selectedOrderDetail.fraudFlags && selectedOrderDetail.fraudFlags.length > 0)) && (
-                <div className="border-t border-gray-200 pt-6 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                <div className="border border-yellow-200 pt-6 bg-yellow-50 rounded-lg p-4">
                   <h3 className="font-semibold text-gray-950 mb-4">Fraud Analysis</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">

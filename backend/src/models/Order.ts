@@ -74,19 +74,23 @@ const orderSchema = new Schema<IOrder>(
   {
     orderId: { type: String, required: true, unique: true, index: true },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
-    orderItems: [
-      {
-        name: { type: String, required: true },
-        qty: { type: Number, required: true },
-        image: { type: String, default: PRODUCT_IMAGE_PLACEHOLDER, trim: true },
-        price: { type: Number, required: true },
-        originalPrice: { type: Number },
-        useApproxPrice: { type: Boolean, default: false },
-        approxPriceMin: { type: Number },
-        approxPriceMax: { type: Number },
-        product: { type: Schema.Types.ObjectId, required: true, ref: 'Product' },
-      },
-    ],
+    orderItems: {
+      type: [
+        {
+          name: { type: String, required: true },
+          qty: { type: Number, required: true },
+          image: { type: String, default: PRODUCT_IMAGE_PLACEHOLDER, trim: true },
+          price: { type: Number, required: true },
+          originalPrice: { type: Number },
+          useApproxPrice: { type: Boolean, default: false },
+          approxPriceMin: { type: Number },
+          approxPriceMax: { type: Number },
+          product: { type: Schema.Types.ObjectId, required: true, ref: 'Product' },
+        },
+      ],
+      default: [],
+      required: true,
+    },
     shippingAddress: {
       address: { type: String, required: true },
       city: { type: String, required: true },
