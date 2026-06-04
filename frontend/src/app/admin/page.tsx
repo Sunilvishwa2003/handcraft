@@ -376,11 +376,15 @@ export default function AdminPage() {
     const user = getStoredUser();
     console.debug("[admin/page] load start", { isAdmin: user?.isAdmin, email: user?.email });
     if (!user?.isAdmin) {
+      console.warn("[admin/page] User is not admin", { email: user?.email, isAdmin: user?.isAdmin });
       setNotice({ tone: "error", text: "Login with an admin account to manage products, orders, custom projects, and storefront assets." });
       setLoading(false);
       return;
     }
 
+    console.debug("[admin/page] Fetching admin data...");
+    const startTime = Date.now();
+    
     const [dashboardResult, productResult, orderResult, customProjectResult, adResult, groupedResult] = await Promise.allSettled([
       apiFetch<Dashboard>("/admin/dashboard"),
       apiFetch<Product[]>("/admin/products"),
@@ -389,6 +393,12 @@ export default function AdminPage() {
       apiFetch<Ad[]>("/admin/ads"),
       apiFetch<{ success: boolean; groups: CategoryGroup[] }>("/admin/products/grouped"),
     ]);
+    
+    console.debug("[admin/page] Fetch complete", { 
+      duration: Date.now() - startTime,
+      dashboardStatus: dashboardResult.status,
+      dashboardError: dashboardResult.status === "rejected" ? String(dashboardResult.reason) : undefined,
+    });
 
     const productList = sortByNewest(productResult.status === "fulfilled" ? productResult.value.map((product) => normalizeAdminProduct(product)) : []);
     const orderList = sortByNewest(orderResult.status === "fulfilled" ? orderResult.value : []);
@@ -463,6 +473,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     load().catch((error) => {
+      console.error("[admin/page] Load failed with error:", error);
       setNotice({ tone: "error", text: error instanceof Error ? error.message : "Could not load admin dashboard" });
       setLoading(false);
     });
@@ -990,13 +1001,24 @@ const saveAd = async (event: FormEvent) => {
   }
 
   if (loading || !dashboard) {
-    console.debug("[admin/page] render guard", { loading, dashboard, isAdminUser });
+    console.debug("[admin/page] render guard", { loading, dashboard: !!dashboard, isAdminUser, user: currentUser?.email });
     return (
       <main className="min-h-screen bg-gray-100 p-3 md:p-6">
         <div className="mx-auto max-w-7xl space-y-4">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="h-32 animate-pulse rounded-md bg-white shadow-sm" />
           ))}
+          <div className="mt-6 rounded-md bg-white p-4 text-sm text-gray-600">
+            <p><strong>Loading admin dashboard...</strong></p>
+            <p className="mt-2">If this takes too long, please:</p>
+            <ol className="mt-2 ml-4 list-decimal space-y-1 text-xs">
+              <li>Open Developer Tools (F12)</li>
+              <li>Go to Console tab</li>
+              <li>Look for [admin/page] messages</li>
+              <li>Share any errors you see</li>
+            </ol>
+            <p className="mt-3 text-xs text-gray-500">Admin status: {isAdminUser ? "✓ Verified" : "✗ Not verified"} | User: {currentUser?.email || "Not logged in"}</p>
+          </div>
         </div>
       </main>
     );
