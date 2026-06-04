@@ -1122,7 +1122,7 @@ const saveAd = async (event: FormEvent) => {
           <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-gray-200 bg-slate-100 shadow-sm">
-                <img src="/mahabs-logo.svg" alt="MahabsCrafto" className="h-10 w-10 object-contain" />
+                <img src="/file.svg" alt="MahabsCrafto" className="h-10 w-10 object-contain" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-950">Admin dashboard</h1>
@@ -2347,9 +2347,17 @@ const saveAd = async (event: FormEvent) => {
                 <div className="space-y-3">
                   {selectedOrderDetail.orderItems?.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
-                      )}
+                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded bg-gray-100 flex items-center justify-center">
+                        <img 
+                          src={item.image || PRODUCT_IMAGE_PLACEHOLDER} 
+                          alt={item.name} 
+                          className="w-16 h-16 object-cover rounded"
+                          onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
+                          }}
+                        />
+                      </div>
                       <div className="flex-1">
                         <p className="font-semibold text-gray-950">{item.name}</p>
                         <p className="text-sm text-gray-600">Qty: {item.qty} × {formatPrice(item.price)}</p>
