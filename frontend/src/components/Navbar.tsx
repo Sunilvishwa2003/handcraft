@@ -13,6 +13,12 @@ import { Cart } from '@/lib/types';
 import NotificationBell from './NotificationBell';
 
 const NAVBAR_LOGO_SRC = '/mahabs-logo.svg';
+const FALLBACK_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect fill="#131921" width="100%" height="100%"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="Georgia, Cambria, 'Times New Roman', Times, serif" font-size="64">MC</text>
+</svg>`;
+const FALLBACK_DATA_URL = `data:image/svg+xml;utf8,${encodeURIComponent(FALLBACK_SVG)}`;
 
 export default function Navbar() {
   const router = useRouter();
@@ -132,12 +138,17 @@ export default function Navbar() {
           >
             <div className="h-14 w-14 sm:h-20 sm:w-20 md:h-24 md:w-24 shrink-0 flex items-center justify-center text-white font-bold text-sm sm:text-base md:text-lg relative overflow-hidden">
               {!logoFailed && (
-                <img 
+                <img
                   src={NAVBAR_LOGO_SRC}
                   alt="MahabsCrafto"
                   loading="eager"
                   className="h-full w-full object-contain p-1"
-                  onError={() => setLogoFailed(true)}
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    // switch to inline fallback image and disable further onerror loops
+                    img.src = FALLBACK_DATA_URL;
+                    img.onerror = null;
+                  }}
                 />
               )}
               {logoFailed && <span>MC</span>}
