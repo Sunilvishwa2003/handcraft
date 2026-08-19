@@ -330,6 +330,17 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   });
 
   const data = await response.json().catch(() => ({}));
+
+  // If the token is invalid or expired, clear stored user to force re-login.
+  if (response.status === 401 || response.status === 403) {
+    try {
+      setStoredUser(null);
+    } catch (e) {
+      // ignore errors during cleanup
+    }
+    throw new Error(data.message || (response.status === 401 ? "Not authorized" : "Forbidden"));
+  }
+
   if (!response.ok) {
     throw new Error(data.message || "Request failed");
   }

@@ -2347,17 +2347,9 @@ const saveAd = async (event: FormEvent) => {
                 <div className="space-y-3">
                   {selectedOrderDetail.orderItems?.map((item, idx) => (
                     <div key={idx} className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded bg-gray-100 flex items-center justify-center">
-                        <img 
-                          src={item.image || PRODUCT_IMAGE_PLACEHOLDER} 
-                          alt={item.name} 
-                          className="w-16 h-16 object-cover rounded"
-                          onError={(event) => {
-                            event.currentTarget.onerror = null;
-                            event.currentTarget.src = PRODUCT_IMAGE_PLACEHOLDER;
-                          }}
-                        />
-                      </div>
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                      )}
                       <div className="flex-1">
                         <p className="font-semibold text-gray-950">{item.name}</p>
                         <p className="text-sm text-gray-600">Qty: {item.qty} × {formatPrice(item.price)}</p>
